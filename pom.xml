@@ -123,23 +123,19 @@
               <workingDirectory>${basedir}/src/main/cpp</workingDirectory>
             </configuration>
           </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.googlecode.javacpp</groupId>
+        <artifactId>javacpp</artifactId>
+        <version>0.3</version>
+        <executions>
           <execution>
-            <id>javacpp</id>
+            <id>exec-javacpp</id>
             <phase>process-classes</phase>
             <goals>
-              <goal>exec</goal>
+              <goal>build</goal>
             </goals>
-            <configuration>
-              <executable>java</executable>
-              <arguments>
-                <argument>-jar</argument>
-                <argument>${com.googlecode.javacpp:javacpp:jar}</argument>
-                <argument>-classpath</argument>
-                <argument>${project.build.outputDirectory}</argument>
-                <argument>-d</argument>
-                <argument>${project.build.outputDirectory}/lib/</argument>
-              </arguments>
-            </configuration>
           </execution>
         </executions>
       </plugin>
@@ -205,6 +201,19 @@
                     <ignore></ignore>
                   </action>
                 </pluginExecution>
+                <pluginExecution>
+                  <pluginExecutionFilter>
+                    <groupId>com.googlecode.javacpp</groupId>
+                    <artifactId>javacpp</artifactId>
+                    <versionRange>[0.3,)</versionRange>
+                    <goals>
+                      <goal>build</goal>
+                    </goals>
+                  </pluginExecutionFilter>
+                  <action>
+                    <ignore></ignore>
+                  </action>
+                </pluginExecution>
               </pluginExecutions>
             </lifecycleMappingMetadata>
           </configuration>
@@ -220,5 +229,12 @@
       <url>http://maven2.javacpp.googlecode.com/git/</url>
     </repository>
   </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>javacpp</id>
+      <name>JavaCPP</name>
+      <url>http://maven2.javacpp.googlecode.com/git/</url>
+    </pluginRepository>
+  </pluginRepositories>
 
 </project>

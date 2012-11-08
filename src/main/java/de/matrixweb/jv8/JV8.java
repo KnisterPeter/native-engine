@@ -10,13 +10,14 @@ import javax.script.ScriptException;
 
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.Pointer;
+import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Namespace;
 import com.googlecode.javacpp.annotation.Platform;
 
 /**
  * @author marwol
  */
-@Platform(include = "jv8.h", includepath = "src/main/cpp")
+@Platform(include = "jv8.h", includepath = { "src/main/cpp", "target/v8/include" }, link = { "v8", "jv8" }, linkpath = "target/jv8")
 @Namespace("jv8")
 public class JV8 implements ScriptEngine {
 
@@ -52,7 +53,7 @@ public class JV8 implements ScriptEngine {
    */
   @Override
   public Object eval(final String script) throws ScriptException {
-    throw new UnsupportedOperationException("TODO");
+    return this.impl.eval(script);
   }
 
   /**
@@ -144,6 +145,7 @@ public class JV8 implements ScriptEngine {
     throw new UnsupportedOperationException("TODO");
   }
 
+  @Name("JV8")
   private static class JV8Impl extends Pointer {
 
     static {
@@ -156,6 +158,12 @@ public class JV8 implements ScriptEngine {
 
     private native void allocate();
 
+    public native V8Value eval(final String script) throws ScriptException;
+
+  }
+
+  @Name("Value")
+  private static abstract class V8Value extends Pointer {
   }
 
 }

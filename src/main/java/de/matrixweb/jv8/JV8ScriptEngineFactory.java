@@ -10,7 +10,7 @@ import javax.script.ScriptEngineFactory;
  */
 public class JV8ScriptEngineFactory implements ScriptEngineFactory {
 
-  private JV8 engine;
+  private static JV8 engine;
 
   /**
    * @see javax.script.ScriptEngineFactory#getEngineName()
@@ -106,10 +106,10 @@ public class JV8ScriptEngineFactory implements ScriptEngineFactory {
    */
   @Override
   public ScriptEngine getScriptEngine() {
-    if (this.engine == null) {
-      this.engine = new JV8();
+    if (JV8ScriptEngineFactory.engine == null) {
+      JV8ScriptEngineFactory.engine = new JV8();
     }
-    return this.engine;
+    return JV8ScriptEngineFactory.engine;
   }
 
 }

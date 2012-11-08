@@ -15,7 +15,8 @@ public class JV8Test {
   public void startup() throws ScriptException {
     ScriptEngineFactory factory = new JV8ScriptEngineFactory();
     ScriptEngine engine = factory.getScriptEngine();
-    engine.eval("var a = 'b';");
+    Object result = engine.eval("return 'Hello World!';");
+    System.out.println("result: " + result);
   }
 
 }
