@@ -3,21 +3,27 @@
 
 #include <v8.h>
 
+using namespace v8;
+
 namespace jv8 {
-	class Value;
+class JV8Value;
 
-	class JV8 {
-	private:
-	public:
-		JV8() {};
-		~JV8() {};
-
-		Value* eval(const char*);
-	};
-
-	class Value {
-	};
+class JV8 {
+public:
+	JV8Value* eval(const char*);
 };
 
-#endif
+class JV8Value {
+private:
+	Persistent<Value> value;
+	char* stringbuf;
 
+public:
+	JV8Value(Handle<Value>);
+	~JV8Value();
+	bool isString();
+	char* toString();
+};
+}
+
+#endif

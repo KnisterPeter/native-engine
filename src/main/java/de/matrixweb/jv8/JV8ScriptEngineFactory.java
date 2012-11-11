@@ -2,7 +2,6 @@ package de.matrixweb.jv8;
 
 import java.util.List;
 
-import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 
 /**
@@ -81,7 +80,8 @@ public class JV8ScriptEngineFactory implements ScriptEngineFactory {
    *      java.lang.String, java.lang.String[])
    */
   @Override
-  public String getMethodCallSyntax(final String obj, final String m, final String... args) {
+  public String getMethodCallSyntax(final String obj, final String m,
+      final String... args) {
     throw new UnsupportedOperationException("TODO");
   }
 
@@ -105,7 +105,7 @@ public class JV8ScriptEngineFactory implements ScriptEngineFactory {
    * @see javax.script.ScriptEngineFactory#getScriptEngine()
    */
   @Override
-  public ScriptEngine getScriptEngine() {
+  public JV8 getScriptEngine() {
     if (JV8ScriptEngineFactory.engine == null) {
       JV8ScriptEngineFactory.engine = new JV8();
     }

@@ -1,10 +1,12 @@
 package de.matrixweb.jv8;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
 import org.junit.Test;
+
+import static org.junit.Assert.*;
+
+import static org.hamcrest.CoreMatchers.*;
 
 /**
  * @author marwol
@@ -13,10 +15,10 @@ public class JV8Test {
 
   @Test
   public void startup() throws ScriptException {
-    ScriptEngineFactory factory = new JV8ScriptEngineFactory();
-    ScriptEngine engine = factory.getScriptEngine();
-    Object result = engine.eval("return 'Hello World!';");
-    System.out.println("result: " + result);
+    final JV8ScriptEngineFactory factory = new JV8ScriptEngineFactory();
+    final JV8 engine = factory.getScriptEngine();
+    System.out.println(engine);
+    assertThat((String) engine.eval("'Hello World!'"), is("Hello World!"));
   }
 
 }

@@ -17,7 +17,8 @@ import com.googlecode.javacpp.annotation.Platform;
 /**
  * @author marwol
  */
-@Platform(include = "jv8.h", includepath = { "src/main/cpp", "target/v8/include" }, link = { "v8", "jv8" }, linkpath = "target/jv8")
+@Platform(include = "jv8.h", includepath = { "src/main/cpp",
+    "target/v8/include" }, link = { "v8", "jv8" }, linkpath = "target/jv8")
 @Namespace("jv8")
 public class JV8 implements ScriptEngine {
 
@@ -35,7 +36,8 @@ public class JV8 implements ScriptEngine {
    *      javax.script.ScriptContext)
    */
   @Override
-  public Object eval(final String script, final ScriptContext context) throws ScriptException {
+  public Object eval(final String script, final ScriptContext context)
+      throws ScriptException {
     throw new UnsupportedOperationException("TODO");
   }
 
@@ -44,7 +46,8 @@ public class JV8 implements ScriptEngine {
    *      javax.script.ScriptContext)
    */
   @Override
-  public Object eval(final Reader reader, final ScriptContext context) throws ScriptException {
+  public Object eval(final Reader reader, final ScriptContext context)
+      throws ScriptException {
     throw new UnsupportedOperationException("TODO");
   }
 
@@ -53,7 +56,14 @@ public class JV8 implements ScriptEngine {
    */
   @Override
   public Object eval(final String script) throws ScriptException {
-    return this.impl.eval(script);
+    final JV8Value result = this.impl.eval(script);
+    if (result.isNull()) {
+      return null;
+    } else if (result.isString()) {
+      return result.toString();
+    }
+    // TODO: Return undefined
+    return result;
   }
 
   /**
@@ -69,7 +79,8 @@ public class JV8 implements ScriptEngine {
    *      javax.script.Bindings)
    */
   @Override
-  public Object eval(final String script, final Bindings n) throws ScriptException {
+  public Object eval(final String script, final Bindings n)
+      throws ScriptException {
     throw new UnsupportedOperationException("TODO");
   }
 
@@ -77,7 +88,8 @@ public class JV8 implements ScriptEngine {
    * @see javax.script.ScriptEngine#eval(java.io.Reader, javax.script.Bindings)
    */
   @Override
-  public Object eval(final Reader reader, final Bindings n) throws ScriptException {
+  public Object eval(final Reader reader, final Bindings n)
+      throws ScriptException {
     throw new UnsupportedOperationException("TODO");
   }
 
@@ -145,6 +157,14 @@ public class JV8 implements ScriptEngine {
     throw new UnsupportedOperationException("TODO");
   }
 
+  /**
+   * @see java.lang.Object#toString()
+   */
+  @Override
+  public String toString() {
+    return this.impl.toString();
+  }
+
   @Name("JV8")
   private static class JV8Impl extends Pointer {
 
@@ -158,12 +178,17 @@ public class JV8 implements ScriptEngine {
 
     private native void allocate();
 
-    public native V8Value eval(final String script) throws ScriptException;
+    public native JV8Value eval(final String script) throws ScriptException;
 
   }
 
-  @Name("Value")
-  private static abstract class V8Value extends Pointer {
+  private static class JV8Value extends Pointer {
+
+    public native boolean isString();
+
+    @Override
+    public native String toString();
+
   }
 
 }

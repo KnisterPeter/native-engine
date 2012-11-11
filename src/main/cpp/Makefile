@@ -16,7 +16,7 @@ ifeq ($(OS),Darwin)
   NPROCS:=$(shell system_profiler | awk '/Number Of CPUs/{print $4}{next;}')
 endif
 
-.PHONY: v8
+.PHONY: all prepare v8 jv8
 
 all: v8 jv8
 
@@ -31,7 +31,6 @@ v8: prepare
 	cp $(BASEDIR)/target/v8/out/$(V8_TARGET_$(BITS)).release/lib.target/libv8.so $(LIBOUTDIR)
 
 jv8: prepare
-	gcc -Wall -fPIC -I$(BASEDIR)/target/v8/include/ -o $(BASEDIR)/target/jv8/jv8.o -c jv8.cpp
-	gcc -Wall -shared -o $(LINKDIR)/libjv8.so $(BASEDIR)/target/jv8/jv8.o
+	g++ -Wall -pedantic -fpic -I$(BASEDIR)/target/v8/include/ -o $(BASEDIR)/target/jv8/jv8.o -c jv8.cpp
+	g++ -Wall -shared -Wl,--no-undefined -L$(LINKDIR) -o $(LINKDIR)/libjv8.so $(BASEDIR)/target/jv8/jv8.o -lv8
 	cp $(LINKDIR)/libjv8.so $(LIBOUTDIR)
-

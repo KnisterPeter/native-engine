@@ -136,6 +136,9 @@
             <goals>
               <goal>build</goal>
             </goals>
+<!--             <configuration> -->
+<!--               <compile>false</compile> -->
+<!--             </configuration> -->
           </execution>
         </executions>
       </plugin>
