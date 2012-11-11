@@ -13,6 +13,9 @@ import static org.hamcrest.CoreMatchers.*;
  */
 public class JV8Test {
 
+  /**
+   * @throws ScriptException
+   */
   @Test
   public void startup() throws ScriptException {
     final JV8ScriptEngineFactory factory = new JV8ScriptEngineFactory();
