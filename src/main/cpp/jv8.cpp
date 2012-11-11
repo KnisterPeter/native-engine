@@ -39,7 +39,7 @@ bool JV8Value::isString() {
 	return value->IsString();
 }
 
-char* JV8Value::toString() {
+char* JV8Value::getString() {
 	if (stringbuf == NULL) {
 		Local<String> str = value->ToString();
 		int len = str->Utf8Length();

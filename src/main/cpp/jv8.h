@@ -23,7 +23,7 @@ public:
 	~JV8Value();
 	void dispose();
 	bool isString();
-	char* toString();
+	char* getString();
 };
 }
 

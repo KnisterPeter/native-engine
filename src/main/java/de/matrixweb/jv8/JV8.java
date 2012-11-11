@@ -63,7 +63,7 @@ public class JV8 implements ScriptEngine {
     final JV8Value result = this.impl.eval(script);
     try {
       if (result.isString()) {
-        return result.toString();
+        return result.getString();
       }
       return null;
     } finally {
@@ -189,8 +189,7 @@ public class JV8 implements ScriptEngine {
 
     public native boolean isString();
 
-    @Override
-    public native String toString();
+    public native String getString();
 
   }
 
