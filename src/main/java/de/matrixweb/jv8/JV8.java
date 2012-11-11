@@ -22,6 +22,10 @@ import com.googlecode.javacpp.annotation.Platform;
 @Namespace("jv8")
 public class JV8 implements ScriptEngine {
 
+  static {
+    Loader.load();
+  }
+
   private final JV8Impl impl;
 
   /**
@@ -57,13 +61,14 @@ public class JV8 implements ScriptEngine {
   @Override
   public Object eval(final String script) throws ScriptException {
     final JV8Value result = this.impl.eval(script);
-    if (result.isNull()) {
+    try {
+      if (result.isString()) {
+        return result.toString();
+      }
       return null;
-    } else if (result.isString()) {
-      return result.toString();
+    } finally {
+      result.dispose();
     }
-    // TODO: Return undefined
-    return result;
   }
 
   /**
@@ -168,10 +173,6 @@ public class JV8 implements ScriptEngine {
   @Name("JV8")
   private static class JV8Impl extends Pointer {
 
-    static {
-      Loader.load();
-    }
-
     public JV8Impl() {
       allocate();
     }
@@ -183,6 +184,8 @@ public class JV8 implements ScriptEngine {
   }
 
   private static class JV8Value extends Pointer {
+
+    public native void dispose();
 
     public native boolean isString();
 

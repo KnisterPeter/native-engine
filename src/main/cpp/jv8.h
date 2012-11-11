@@ -21,6 +21,7 @@ private:
 public:
 	JV8Value(Handle<Value>);
 	~JV8Value();
+	void dispose();
 	bool isString();
 	char* toString();
 };

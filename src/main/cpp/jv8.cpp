@@ -14,7 +14,7 @@ JV8Value* JV8::eval(const char* script) {
 	Local<Value> result = compiled->Run();
 	JV8Value* value = new JV8Value(result);
 	context.Dispose();
-	printf("[NATIVE] str: %s\n", value->toString());
+	//printf("[NATIVE] str: %s\n", value->toString());
 	return value;
 }
 
@@ -28,6 +28,11 @@ JV8Value::~JV8Value() {
 	if (stringbuf != NULL) {
 		delete stringbuf;
 	}
+	//printf("[NATIVE] destruct jv8value");
+}
+
+void JV8Value::dispose() {
+	delete this;
 }
 
 bool JV8Value::isString() {
