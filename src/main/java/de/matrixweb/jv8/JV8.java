@@ -1,5 +1,7 @@
 package de.matrixweb.jv8;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.Reader;
 
 import javax.script.Bindings;
@@ -76,7 +78,18 @@ public class JV8 implements ScriptEngine {
    */
   @Override
   public Object eval(final Reader reader) throws ScriptException {
-    throw new UnsupportedOperationException("TODO");
+    final BufferedReader br = new BufferedReader(reader);
+    try {
+      final StringBuilder script = new StringBuilder();
+      String line = br.readLine();
+      while (line != null) {
+        script.append(line);
+        line = br.readLine();
+      }
+      return eval(script.toString());
+    } catch (final IOException e) {
+      throw new ScriptException(e);
+    }
   }
 
   /**
