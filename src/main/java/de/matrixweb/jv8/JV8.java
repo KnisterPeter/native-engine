@@ -116,7 +116,7 @@ public class JV8 implements ScriptEngine {
    */
   @Override
   public void put(final String key, final Object value) {
-    throw new UnsupportedOperationException("TODO");
+    this.impl.put(key, value);
   }
 
   /**
@@ -193,6 +193,8 @@ public class JV8 implements ScriptEngine {
     private native void allocate();
 
     public native JV8Value eval(final String script) throws ScriptException;
+
+    public native void put(final String key, final Object value);
 
   }
 
