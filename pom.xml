@@ -6,15 +6,16 @@
     <artifactId>oss-parent</artifactId>
     <version>7</version>
   </parent>
-  <groupId>de.matrixweb.jv8</groupId>
-  <artifactId>jv8</artifactId>
+  <groupId>de.matrixweb.ne</groupId>
+  <artifactId>native-engine</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>jv8</name>
+  <name>NativeEngine</name>
   <description>
-    jv8 is a java binding for googles v8 javascript engine.
+    NativeEngine is a java binding for googles v8 javascript engine to be 
+    used by Smaller.
   </description>
-  <url>https://github.com/KnisterPeter/jv8</url>
+  <url>https://github.com/KnisterPeter/native-engine</url>
 
   <licenses>
     <license>
@@ -33,9 +34,9 @@
   </developers>
 
   <scm>
-    <connection>scm:git:git@github.com:KnisterPeter/jv8.git</connection>
-    <developerConnection>scm:git:git@github.com:KnisterPeter/jv8.git</developerConnection>
-    <url>https://github.com/KnisterPeter/jv8</url>
+    <connection>scm:git:git@github.com:KnisterPeter/native-engine.git</connection>
+    <developerConnection>scm:git:git@github.com:KnisterPeter/native-engine.git</developerConnection>
+    <url>https://github.com/KnisterPeter/native-engine</url>
   </scm>
 
   <properties>
@@ -93,18 +94,6 @@
             <version>1.9.2</version>
           </dependency>
         </dependencies>
-      </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <version>2.3</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>properties</goal>
-            </goals>
-          </execution>
-        </executions>
       </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
@@ -172,19 +161,6 @@
                     <versionRange>[1.7,)</versionRange>
                     <goals>
                       <goal>checkout</goal>
-                    </goals>
-                  </pluginExecutionFilter>
-                  <action>
-                    <ignore></ignore>
-                  </action>
-                </pluginExecution>
-                <pluginExecution>
-                  <pluginExecutionFilter>
-                    <groupId>org.apache.maven.plugins</groupId>
-                    <artifactId>maven-dependency-plugin</artifactId>
-                    <versionRange>[2.3,)</versionRange>
-                    <goals>
-                      <goal>properties</goal>
                     </goals>
                   </pluginExecutionFilter>
                   <action>

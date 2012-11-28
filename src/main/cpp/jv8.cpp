@@ -12,16 +12,16 @@ NativeEngine::NativeEngine() {
 }
 
 NativeEngine::~NativeEngine() {
+	function.Dispose();
 	context.Dispose();
 }
 
-void NativeEngine::addScript(const char* script) {
-	TryCatch try_catch;
-
+void NativeEngine::addScript(std::string script) {
 	HandleScope handle_scope;
+	TryCatch try_catch;
 	Context::Scope context_scope(context);
 
-	Handle<String> source = String::New(script);
+	Handle<String> source = String::New(script.c_str());
 	Handle<Script> compiled = Script::Compile(source);
 	if (compiled.IsEmpty()) {
 		String::Utf8Value exception(try_catch.Exception());
@@ -35,26 +35,29 @@ void NativeEngine::addScript(const char* script) {
 	}
 }
 
-void NativeEngine::prepareRun(const char* name) {
+void NativeEngine::prepareRun(std::string name) {
 	HandleScope handle_scope;
 	Context::Scope context_scope(context);
 
-	Handle<String> funcName = String::New(name);
+	Handle<String> funcName = String::New(name.c_str());
 	Handle<Value> func = context->Global()->Get(funcName);
-	function = handle_scope.Close(Handle<Function>::Cast(func));
+	function = Persistent<Function>::New(Handle<Function>::Cast(func));
 }
 
-const char* NativeEngine::execute(const char* input) {
-	TryCatch try_catch;
-
+std::string NativeEngine::execute(std::string input) {
 	HandleScope handle_scope;
+	TryCatch try_catch;
 	Context::Scope context_scope(context);
 
 	Handle<Value> argv[1];
-	argv[0] = String::New(input);
+	argv[0] = String::New(input.c_str());
 	Handle<Value> result = function->Call(context->Global(), 1, argv);
-	// Convert result to string
-	return "";
+	if (result->IsString()) {
+		String::Utf8Value utf8(result->ToString());
+		std::string str = *utf8;
+		return str;
+	}
+	return NULL;
 }
 
 
