@@ -10,7 +10,7 @@ import com.googlecode.javacpp.annotation.StdString;
 /**
  * @author marwol
  */
-@Platform(include = "jv8.h", includepath = { "src/main/cpp", "target/v8/include" }, link = { "jv8" }, linkpath = "target/jv8")
+@Platform(include = "native-engine.h", includepath = { "src/main/cpp", "target/v8/include" }, link = { "native-engine" }, linkpath = "target/ne")
 public class NativeEngine {
 
   private final NativeEngineImpl impl;
@@ -44,7 +44,7 @@ public class NativeEngine {
     return this.impl.execute(input);
   }
 
-  @Namespace("jv8")
+  @Namespace("ne")
   @Name("NativeEngine")
   private static class NativeEngineImpl extends Pointer {
 

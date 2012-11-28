@@ -7,7 +7,7 @@
 
 using namespace v8;
 
-namespace jv8 {
+namespace ne {
 
 	/**
 	 *

@@ -1,10 +1,10 @@
-#include "jv8.h"
+#include "native-engine.h"
 #include <stdlib.h>
 #include <exception>
 
 using namespace std;
 using namespace v8;
-using namespace jv8;
+using namespace ne;
 
 NativeEngine::NativeEngine() {
 	HandleScope handle_scope;
