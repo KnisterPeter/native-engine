@@ -10,6 +10,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineFactory;
 import javax.script.ScriptException;
 
+import com.googlecode.javacpp.FunctionPointer;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.Pointer;
 import com.googlecode.javacpp.annotation.Name;
@@ -20,7 +21,7 @@ import com.googlecode.javacpp.annotation.Platform;
  * @author marwol
  */
 @Platform(include = "jv8.h", includepath = { "src/main/cpp",
-    "target/v8/include" }, link = { "v8", "jv8" }, linkpath = "target/jv8")
+    "target/v8/include" }, link = { "jv8" }, linkpath = "target/jv8")
 @Namespace("jv8")
 public class JV8 implements ScriptEngine {
 
@@ -183,6 +184,23 @@ public class JV8 implements ScriptEngine {
     return this.impl.toString();
   }
 
+  @Name("NativeEngine")
+  private static class NativeEngine extends Pointer {
+
+    public NativeEngine() {
+      allocate();
+    }
+
+    private native void allocate();
+
+    public native void addScript(String script);
+
+    public native void prepareRun(String name);
+
+    public native String execute(String input);
+
+  }
+
   @Name("JV8")
   private static class JV8Impl extends Pointer {
 
@@ -205,6 +223,17 @@ public class JV8 implements ScriptEngine {
     public native boolean isString();
 
     public native String getString();
+
+  }
+
+  private static class JV8Callback extends FunctionPointer {
+
+    private native void allocate();
+
+    @Name("callback")
+    public void call() {
+      System.out.println("JV8.JV8Callback.call()");
+    }
 
   }
 

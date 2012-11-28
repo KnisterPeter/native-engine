@@ -8,7 +8,36 @@
 using namespace v8;
 
 namespace jv8 {
-class JV8Exception;
+class NativeEngine {
+private:
+	Persistent<Context> context;
+	Handle<Function> function;
+
+public:
+	NativeEngine();
+	~NativeEngine();
+	void addScript(const char*);
+	void prepareRun(const char*);
+	const char* execute(const char*);
+};
+
+class NativeException : public std::exception {
+	std::string message;
+public:
+	NativeException(std::string _message) {
+		message = _message;
+	}
+	virtual ~NativeException() throw() {
+	}
+
+	virtual const char* what() const throw() {
+		return message.c_str();
+	}
+};
+
+
+
+class JV8;
 class JV8Value;
 
 class JV8 {
@@ -28,20 +57,6 @@ public:
 	void dispose();
 	bool isString();
 	char* getString();
-};
-
-class JV8Exception : public std::exception {
-	std::string message;
-public:
-	JV8Exception(std::string _message) {
-		message = _message;
-	}
-	virtual ~JV8Exception() throw() {
-	}
-
-	virtual const char* what() const throw() {
-		return message.c_str();
-	}
 };
 
 }
