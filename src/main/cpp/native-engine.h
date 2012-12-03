@@ -9,6 +9,8 @@ using namespace v8;
 
 namespace ne {
 
+	typedef char* (ResolverCallback)(const char*);
+
 	/**
 	 *
 	 */
@@ -16,10 +18,12 @@ namespace ne {
 	private:
 		Persistent<Context> context;
 		Persistent<Function> function;
+		ResolverCallback* callback;
 
 	public:
 		NativeEngine();
 		~NativeEngine();
+		void setResolverCallback(ResolverCallback*);
 		void addScript(std::string);
 		void prepareRun(std::string);
 		std::string execute(std::string);

@@ -16,6 +16,10 @@ NativeEngine::~NativeEngine() {
 	context.Dispose();
 }
 
+void NativeEngine::setResolverCallback(ResolverCallback* _callback) {
+	callback = _callback;
+}
+
 void NativeEngine::addScript(std::string script) {
 	HandleScope handle_scope;
 	TryCatch try_catch;
@@ -48,6 +52,8 @@ std::string NativeEngine::execute(std::string input) {
 	HandleScope handle_scope;
 	TryCatch try_catch;
 	Context::Scope context_scope(context);
+
+	//printf(callback("welt"));
 
 	Handle<Value> argv[1];
 	argv[0] = String::New(input.c_str());

@@ -17,9 +17,13 @@ public class NativeEngineTest {
   @Test
   public void testNativeEngine() {
     NativeEngine ne = new NativeEngine();
-    ne.addScript("function echo(msg) { return msg; }");
-    ne.prepareRun("echo");
-    assertThat(ne.execute("hallo"), is("hallo"));
+    try {
+      ne.addScript("function echo(msg) { return msg; }");
+      ne.prepareRun("echo");
+      assertThat(ne.execute("hallo"), is("hallo"));
+    } finally {
+      ne.dispose();
+    }
   }
 
 }
