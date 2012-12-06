@@ -13,36 +13,40 @@ import com.googlecode.javacpp.annotation.StdString;
 /**
  * @author marwol
  */
-@Platform(include = "native-engine.h", includepath = { "src/main/cpp", "target/v8/include" }, link = { "native-engine" }, linkpath = "target/ne")
+@Platform(include = "native-engine.h", includepath = { "src/main/cpp",
+    "target/v8/include" }, link = { "native-engine" }, linkpath = "target/ne")
 public class NativeEngine {
 
   private NativeEngineImpl impl;
+
+  private final StringFunctionCallback resolver;
 
   /**
    * 
    */
   public NativeEngine() {
+    this(null);
+  }
+
+  /**
+   * @param resolver
+   */
+  public NativeEngine(final StringFunctionCallback resolver) {
     this.impl = new NativeEngineImpl();
-    this.impl.setResolverCallback(new ResolverCallback() {
-      @Override
-      public BytePointer call(final BytePointer p) {
-        String str = p.getString();
-        return new BytePointer("result + " + str);
-      }
-    });
+    this.resolver = resolver;
   }
 
   /**
    * @param script
    */
-  public void addScript(final String script) {
+  public synchronized void addScript(final String script) {
     this.impl.addScript(script);
   }
 
   /**
    * @param name
    */
-  public void prepareRun(final String name) {
+  public synchronized void prepareRun(final String name) {
     this.impl.prepareRun(name);
   }
 
@@ -50,14 +54,15 @@ public class NativeEngine {
    * @param input
    * @return Returns the output of the executed scripts as {@link String}
    */
-  public String execute(final String input) {
+  public synchronized String execute(final String input) {
+    this.impl.setStringFunctionCallback(this.resolver);
     return this.impl.execute(input);
   }
 
   /**
    * 
    */
-  public void dispose() {
+  public synchronized void dispose() {
     this.impl.deallocate();
     this.impl = null;
   }
@@ -76,7 +81,7 @@ public class NativeEngine {
 
     private native void allocate();
 
-    public native void setResolverCallback(ResolverCallback callback);
+    public native void setStringFunctionCallback(StringFunctionCallback callback);
 
     public native void addScript(@StdString String script);
 
@@ -87,20 +92,27 @@ public class NativeEngine {
 
   }
 
-  private static class ResolverCallback extends FunctionPointer {
+  /**
+   * @author markusw
+   */
+  public static class StringFunctionCallback extends FunctionPointer {
 
     static {
       Loader.load();
     }
 
-    protected ResolverCallback() {
+    protected StringFunctionCallback() {
       allocate();
     }
 
     private final native void allocate();
 
+    /**
+     * @param input
+     * @return Returns the callbacks response as {@link String}
+     */
     @Cast("char*")
-    public native BytePointer call(@Cast("const char*") BytePointer p);
+    public native BytePointer call(@Cast("const char*") BytePointer input);
 
   }
 

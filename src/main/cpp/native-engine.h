@@ -9,25 +9,32 @@ using namespace v8;
 
 namespace ne {
 
-	typedef char* (ResolverCallback)(const char*);
+	typedef char* (StringFunctionCallback)(const char*);
 
 	/**
 	 *
 	 */
 	class NativeEngine {
 	private:
+		static Persistent<ObjectTemplate> callback_template;
+
 		Persistent<Context> context;
 		Persistent<Function> function;
-		ResolverCallback* callback;
+		StringFunctionCallback* callback;
+
+		static Handle<Object> WrapCallback(StringFunctionCallback*);
+		static Handle<Value> CallbackCall(const Arguments& args);
 
 	public:
 		NativeEngine();
 		~NativeEngine();
-		void setResolverCallback(ResolverCallback*);
+		void setStringFunctionCallback(StringFunctionCallback*);
 		void addScript(std::string);
 		void prepareRun(std::string);
 		std::string execute(std::string);
 	};
+
+	Persistent<ObjectTemplate> NativeEngine::callback_template;
 
 	/**
 	 *
