@@ -13,13 +13,12 @@ import com.googlecode.javacpp.annotation.StdString;
 /**
  * @author marwol
  */
-@Platform(include = "native-engine.h", includepath = { "src/main/cpp",
-    "target/v8/include" }, link = { "native-engine" }, linkpath = "target/ne")
+@Platform(include = "native-engine.h", includepath = { "src/main/cpp", "target/v8/include" }, link = { "native-engine" }, linkpath = "target/ne")
 public class NativeEngine {
 
   private NativeEngineImpl impl;
 
-  private final StringFunctionCallback callback;
+  private StringFunctionCallback callback;
 
   /**
    * 
@@ -33,14 +32,15 @@ public class NativeEngine {
    */
   public NativeEngine(final StringFunctor stringFunctor) {
     this.impl = new NativeEngineImpl();
-    this.callback = new StringFunctionCallback() {
-      @Override
-      @Cast("char*")
-      public BytePointer call(@Cast("const char*") final BytePointer input) {
-        return stringFunctor == null ? input : new BytePointer(
-            stringFunctor.call(input.getString()));
-      }
-    };
+    if (stringFunctor != null) {
+      this.callback = new StringFunctionCallback(stringFunctor.getName()) {
+        @Override
+        @Cast("char*")
+        public BytePointer call(@Cast("const char*") final BytePointer input) {
+          return new BytePointer(stringFunctor.call(input.getString()));
+        }
+      };
+    }
   }
 
   /**
@@ -62,7 +62,9 @@ public class NativeEngine {
    * @return Returns the output of the executed scripts as {@link String}
    */
   public synchronized String execute(final String input) {
-    this.impl.setStringFunctionCallback(this.callback);
+    if (this.callback != null) {
+      this.impl.setStringFunctionCallback("resolve", this.callback);
+    }
     return this.impl.execute(input);
   }
 
@@ -88,7 +90,7 @@ public class NativeEngine {
 
     private native void allocate();
 
-    public native void setStringFunctionCallback(StringFunctionCallback callback);
+    public native void setStringFunctionCallback(@StdString String name, StringFunctionCallback callback);
 
     public native void addScript(@StdString String script);
 
@@ -108,11 +110,18 @@ public class NativeEngine {
       Loader.load();
     }
 
-    protected StringFunctionCallback() {
+    private final String name;
+
+    protected StringFunctionCallback(final String name) {
       allocate();
+      this.name = name;
     }
 
     private final native void allocate();
+
+    public String getName() {
+      return this.name;
+    }
 
     /**
      * @param input

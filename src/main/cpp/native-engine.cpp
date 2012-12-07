@@ -16,7 +16,8 @@ NativeEngine::~NativeEngine() {
 	context.Dispose();
 }
 
-void NativeEngine::setStringFunctionCallback(StringFunctionCallback* _callback) {
+void NativeEngine::setStringFunctionCallback(std::string _name, StringFunctionCallback* _callback) {
+	name = _name;
 	callback = _callback;
 }
 
@@ -56,8 +57,10 @@ std::string NativeEngine::execute(std::string input) {
 	TryCatch try_catch;
 	Context::Scope context_scope(context);
 
-	Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(CallbackCall, classPtrToExternal());
-	context->Global()->Set(String::New("resolve"), funcTmpl->GetFunction());
+	if (callback != NULL) {
+		Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(CallbackCall, classPtrToExternal());
+		context->Global()->Set(String::New(name.c_str()), funcTmpl->GetFunction());
+	}
 
 	Handle<Value> argv[1];
 	argv[0] = String::New(input.c_str());

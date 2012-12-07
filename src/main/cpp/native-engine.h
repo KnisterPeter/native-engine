@@ -20,6 +20,7 @@ namespace ne {
 
 		Persistent<Context> context;
 		Persistent<Function> function;
+		std::string name;
 		StringFunctionCallback* callback;
 
 		static Handle<Value> CallbackCall(const Arguments& args);
@@ -39,7 +40,7 @@ namespace ne {
 	public:
 		NativeEngine();
 		~NativeEngine();
-		void setStringFunctionCallback(StringFunctionCallback*);
+		void setStringFunctionCallback(std::string, StringFunctionCallback*);
 		void addScript(std::string);
 		void prepareRun(std::string);
 		std::string execute(std::string);

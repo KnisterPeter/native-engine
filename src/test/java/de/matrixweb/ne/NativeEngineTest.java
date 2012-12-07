@@ -33,7 +33,7 @@ public class NativeEngineTest {
    */
   @Test
   public void testNativeEngineCallback() {
-    final NativeEngine ne = new NativeEngine(new StringFunctor() {
+    final NativeEngine ne = new NativeEngine(new StringFunctor("resolver") {
       @Override
       public String call(final String input) {
         return "welt";
