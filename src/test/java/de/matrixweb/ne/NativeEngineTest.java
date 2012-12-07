@@ -2,10 +2,6 @@ package de.matrixweb.ne;
 
 import org.junit.Test;
 
-import com.googlecode.javacpp.BytePointer;
-
-import de.matrixweb.ne.NativeEngine.StringFunctionCallback;
-
 import static org.junit.Assert.*;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -23,8 +19,10 @@ public class NativeEngineTest {
     final NativeEngine ne = new NativeEngine();
     try {
       ne.addScript("function echo(msg) { return msg; }");
+      ne.addScript("function echo2(msg) { return msg; }");
       ne.prepareRun("echo");
       assertThat(ne.execute("hallo"), is("hallo"));
+      assertThat(ne.execute("hallo2"), is("hallo2"));
     } finally {
       ne.dispose();
     }
@@ -35,12 +33,11 @@ public class NativeEngineTest {
    */
   @Test
   public void testNativeEngineCallback() {
-    final NativeEngine ne = new NativeEngine(new StringFunctionCallback() {
+    final NativeEngine ne = new NativeEngine(new StringFunctor() {
       @Override
-      public BytePointer call(final BytePointer p) {
-        final String str = p.getString();
-        System.out.println("Callback Output: " + str);
-        return new BytePointer("welt");
+      public String call(final String input) {
+        System.out.println("Callback Output: " + input);
+        return "welt";
       }
     });
     try {

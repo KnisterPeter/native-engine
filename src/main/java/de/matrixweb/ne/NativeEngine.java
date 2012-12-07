@@ -19,7 +19,7 @@ public class NativeEngine {
 
   private NativeEngineImpl impl;
 
-  private final StringFunctionCallback resolver;
+  private final StringFunctionCallback callback;
 
   /**
    * 
@@ -29,11 +29,18 @@ public class NativeEngine {
   }
 
   /**
-   * @param resolver
+   * @param stringFunctor
    */
-  public NativeEngine(final StringFunctionCallback resolver) {
+  public NativeEngine(final StringFunctor stringFunctor) {
     this.impl = new NativeEngineImpl();
-    this.resolver = resolver;
+    this.callback = new StringFunctionCallback() {
+      @Override
+      @Cast("char*")
+      public BytePointer call(@Cast("const char*") final BytePointer input) {
+        return stringFunctor == null ? input : new BytePointer(
+            stringFunctor.call(input.getString()));
+      }
+    };
   }
 
   /**
@@ -55,7 +62,7 @@ public class NativeEngine {
    * @return Returns the output of the executed scripts as {@link String}
    */
   public synchronized String execute(final String input) {
-    this.impl.setStringFunctionCallback(this.resolver);
+    this.impl.setStringFunctionCallback(this.callback);
     return this.impl.execute(input);
   }
 
@@ -95,7 +102,7 @@ public class NativeEngine {
   /**
    * @author markusw
    */
-  public static class StringFunctionCallback extends FunctionPointer {
+  private static class StringFunctionCallback extends FunctionPointer {
 
     static {
       Loader.load();
