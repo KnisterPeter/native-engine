@@ -36,12 +36,11 @@ public class NativeEngineTest {
     final NativeEngine ne = new NativeEngine(new StringFunctor() {
       @Override
       public String call(final String input) {
-        System.out.println("Callback Output: " + input);
         return "welt";
       }
     });
     try {
-      ne.addScript("function run(msg) { return resolver.resolve(msg); }");
+      ne.addScript("function run(msg) { return new String(resolve(msg)); }");
       ne.prepareRun("run");
       assertThat(ne.execute("hallo"), is("welt"));
     } finally {

@@ -16,14 +16,25 @@ namespace ne {
 	 */
 	class NativeEngine {
 	private:
-		static Persistent<ObjectTemplate> callback_template;
+		static Persistent<FunctionTemplate> callback_template;
 
 		Persistent<Context> context;
 		Persistent<Function> function;
 		StringFunctionCallback* callback;
 
-		static Handle<Object> WrapCallback(StringFunctionCallback*);
 		static Handle<Value> CallbackCall(const Arguments& args);
+
+		Local<External> classPtrToExternal() {
+			HandleScope handle_scope;
+			return handle_scope.Close(External::New(reinterpret_cast<void *>(this)));
+		}
+
+		static NativeEngine* externalToClassPtr(Local<Value> data) {
+			if (!data.IsEmpty() && data->IsExternal()) {
+				return static_cast<NativeEngine*>(External::Unwrap(data));
+			}
+			return NULL;
+		}
 
 	public:
 		NativeEngine();
@@ -34,7 +45,7 @@ namespace ne {
 		std::string execute(std::string);
 	};
 
-	Persistent<ObjectTemplate> NativeEngine::callback_template;
+	Persistent<FunctionTemplate> NativeEngine::callback_template;
 
 	/**
 	 *
