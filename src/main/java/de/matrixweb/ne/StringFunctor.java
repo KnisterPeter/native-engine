@@ -26,6 +26,6 @@ public abstract class StringFunctor {
    *          The input {@link String} to operate on
    * @return Returns the processed {@link String}
    */
-  abstract String call(String input);
+  public abstract String call(String input);
 
 }

@@ -24,23 +24,20 @@ public class NativeEngine {
    * 
    */
   public NativeEngine() {
-    this(null);
+    this.impl = new NativeEngineImpl();
   }
 
   /**
-   * @param stringFunctor
+   * @param functor
    */
-  public NativeEngine(final StringFunctor stringFunctor) {
-    this.impl = new NativeEngineImpl();
-    if (stringFunctor != null) {
-      this.callback = new StringFunctionCallback(stringFunctor.getName()) {
-        @Override
-        @Cast("char*")
-        public BytePointer call(@Cast("const char*") final BytePointer input) {
-          return new BytePointer(stringFunctor.call(input.getString()));
-        }
-      };
-    }
+  public void addCallbackFunction(final StringFunctor functor) {
+    this.callback = new StringFunctionCallback(functor.getName()) {
+      @Override
+      @Cast("char*")
+      public BytePointer call(@Cast("const char*") final BytePointer input) {
+        return new BytePointer(functor.call(input.getString()));
+      }
+    };
   }
 
   /**
