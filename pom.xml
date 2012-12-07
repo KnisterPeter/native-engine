@@ -8,7 +8,7 @@
   </parent>
   <groupId>de.matrixweb.ne</groupId>
   <artifactId>native-engine</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.1.0</version>
 
   <name>NativeEngine</name>
   <description>
@@ -108,7 +108,7 @@
             </goals>
             <configuration>
               <executable>make</executable>
-              <commandlineArgs></commandlineArgs>
+              <commandlineArgs />
               <workingDirectory>${basedir}/src/main/cpp</workingDirectory>
             </configuration>
           </execution>
@@ -164,7 +164,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore></ignore>
+                    <ignore />
                   </action>
                 </pluginExecution>
                 <pluginExecution>
@@ -177,7 +177,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore></ignore>
+                    <ignore />
                   </action>
                 </pluginExecution>
                 <pluginExecution>
@@ -190,7 +190,7 @@
                     </goals>
                   </pluginExecutionFilter>
                   <action>
-                    <ignore></ignore>
+                    <ignore />
                   </action>
                 </pluginExecution>
               </pluginExecutions>
