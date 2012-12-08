@@ -35,7 +35,7 @@ public class NativeEngineTest {
   public void testNativeEngineCallback() {
     final NativeEngine ne = new NativeEngine();
     try {
-      ne.addCallbackFunction(new StringFunctor("resolver") {
+      ne.addCallbackFunction(new StringFunctor("resolve") {
         @Override
         public String call(final String input) {
           return "welt";

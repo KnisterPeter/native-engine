@@ -65,12 +65,15 @@ std::string NativeEngine::execute(std::string input) {
 	Handle<Value> argv[1];
 	argv[0] = String::New(input.c_str());
 	Handle<Value> result = function->Call(context->Global(), 1, argv);
-	if (result->IsString() || result->IsStringObject()) {
-		String::Utf8Value utf8(result->ToString());
-		std::string str = *utf8;
-		return str;
+	if (result.IsEmpty()) {
+		throw NativeException("Script result was empty");
 	}
-	throw NativeException("Script result was not string");
+	if (!(result->IsString() || result->IsStringObject())) {
+		throw NativeException("Script result was not string");
+	}
+	String::Utf8Value utf8(result->ToString());
+	std::string str = *utf8;
+	return str;
 }
 
 Handle<Value> NativeEngine::CallbackCall(const Arguments& args) {

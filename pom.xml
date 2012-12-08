@@ -104,7 +104,7 @@
         <executions>
           <execution>
             <id>build-v8</id>
-            <phase>process-classes</phase>
+            <phase>compile</phase>
             <goals>
               <goal>exec</goal>
             </goals>

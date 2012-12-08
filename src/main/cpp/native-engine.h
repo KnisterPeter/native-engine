@@ -16,8 +16,6 @@ namespace ne {
 	 */
 	class NativeEngine {
 	private:
-		static Persistent<FunctionTemplate> callback_template;
-
 		Persistent<Context> context;
 		Persistent<Function> function;
 		std::string name;
@@ -45,8 +43,6 @@ namespace ne {
 		void prepareRun(std::string);
 		std::string execute(std::string);
 	};
-
-	Persistent<FunctionTemplate> NativeEngine::callback_template;
 
 	/**
 	 *

@@ -13,7 +13,8 @@ import com.googlecode.javacpp.annotation.StdString;
 /**
  * @author marwol
  */
-@Platform(include = "native-engine.h", includepath = { "src/main/cpp", "target/v8/include" }, link = { "native-engine" }, linkpath = "target/ne")
+@Platform(include = "native-engine.h", includepath = { "src/main/cpp",
+    "target/v8/include" }, link = { "native-engine" }, linkpath = "target/ne")
 public class NativeEngine {
 
   private NativeEngineImpl impl;
@@ -60,7 +61,8 @@ public class NativeEngine {
    */
   public synchronized String execute(final String input) {
     if (this.callback != null) {
-      this.impl.setStringFunctionCallback("resolve", this.callback);
+      this.impl.setStringFunctionCallback(this.callback.getName(),
+          this.callback);
     }
     return this.impl.execute(input);
   }
@@ -87,7 +89,8 @@ public class NativeEngine {
 
     private native void allocate();
 
-    public native void setStringFunctionCallback(@StdString String name, StringFunctionCallback callback);
+    public native void setStringFunctionCallback(@StdString String name,
+        StringFunctionCallback callback);
 
     public native void addScript(@StdString String script);
 
