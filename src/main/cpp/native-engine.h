@@ -22,18 +22,8 @@ namespace ne {
 		StringFunctionCallback* callback;
 
 		static Handle<Value> CallbackCall(const Arguments& args);
-
-		Local<External> classPtrToExternal() {
-			HandleScope handle_scope;
-			return handle_scope.Close(External::New(reinterpret_cast<void *>(this)));
-		}
-
-		static NativeEngine* externalToClassPtr(Local<Value> data) {
-			if (!data.IsEmpty() && data->IsExternal()) {
-				return static_cast<NativeEngine*>(External::Unwrap(data));
-			}
-			return NULL;
-		}
+		Local<External> classPtrToExternal();
+		static NativeEngine* externalToClassPtr(Local<Value>);
 
 	public:
 		NativeEngine();
@@ -48,16 +38,17 @@ namespace ne {
 	 *
 	 */
 	class NativeException : public std::exception {
+	private:
 		std::string message;
+
 	public:
-		NativeException(std::string _message) {
-			message = _message;
+		NativeException(std::string message) {
+			this->message = message;
 		}
-		virtual ~NativeException() throw() {
-		}
+		virtual ~NativeException() throw() {}
 
 		virtual const char* what() const throw() {
-			return message.c_str();
+			return this->message.c_str();
 		}
 	};
 

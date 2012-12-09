@@ -8,23 +8,35 @@ using namespace ne;
 
 NativeEngine::NativeEngine() {
 	HandleScope handle_scope;
-	context = Context::New();
+	this->context = Context::New();
 }
 
 NativeEngine::~NativeEngine() {
-	function.Dispose();
-	context.Dispose();
+	this->function.Dispose();
+	this->context.Dispose();
 }
 
-void NativeEngine::setStringFunctionCallback(std::string _name, StringFunctionCallback* _callback) {
-	name = _name;
-	callback = _callback;
+Local<External> NativeEngine::classPtrToExternal() {
+	HandleScope handle_scope;
+	return handle_scope.Close(External::New(reinterpret_cast<void *>(this)));
+}
+
+NativeEngine* NativeEngine::externalToClassPtr(Local<Value> data) {
+	if (!data.IsEmpty() && data->IsExternal()) {
+		return static_cast<NativeEngine*>(External::Unwrap(data));
+	}
+	return NULL;
+}
+
+void NativeEngine::setStringFunctionCallback(std::string name, StringFunctionCallback* callback) {
+	this->name = name;
+	this->callback = callback;
 }
 
 void NativeEngine::addScript(std::string script) {
 	HandleScope handle_scope;
 	TryCatch try_catch;
-	Context::Scope context_scope(context);
+	Context::Scope context_scope(this->context);
 
 	Handle<String> source = String::New(script.c_str());
 	Handle<Script> compiled = Script::Compile(source);
@@ -42,29 +54,28 @@ void NativeEngine::addScript(std::string script) {
 
 void NativeEngine::prepareRun(std::string name) {
 	HandleScope handle_scope;
-	Context::Scope context_scope(context);
+	Context::Scope context_scope(this->context);
 
-	Handle<String> funcName = String::New(name.c_str());
-	Handle<Value> func = context->Global()->Get(funcName);
+	Handle<Value> func = this->context->Global()->Get(String::New(name.c_str()));
 	if (!func->IsFunction()) {
 		throw NativeException("No function '" + name + "' found");
 	}
-	function = Persistent<Function>::New(Handle<Function>::Cast(func));
+	this->function = Persistent<Function>::New(Handle<Function>::Cast(func));
 }
 
 std::string NativeEngine::execute(std::string input) {
 	HandleScope handle_scope;
 	TryCatch try_catch;
-	Context::Scope context_scope(context);
+	Context::Scope context_scope(this->context);
 
-	if (callback != NULL) {
-		Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(CallbackCall, classPtrToExternal());
-		context->Global()->Set(String::New(name.c_str()), funcTmpl->GetFunction());
+	if (this->callback != NULL) {
+		Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(CallbackCall, this->classPtrToExternal());
+		this->context->Global()->Set(String::New(name.c_str()), funcTmpl->GetFunction());
 	}
 
 	Handle<Value> argv[1];
 	argv[0] = String::New(input.c_str());
-	Handle<Value> result = function->Call(context->Global(), 1, argv);
+	Handle<Value> result = this->function->Call(this->context->Global(), 1, argv);
 	if (result.IsEmpty()) {
 		throw NativeException("Script result was empty");
 	}
