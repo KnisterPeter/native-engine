@@ -20,9 +20,8 @@ public class NativeEngineTest {
     try {
       ne.addScript("function echo(msg) { return msg; }");
       ne.addScript("function echo2(msg) { return msg; }");
-      ne.prepareRun("echo");
-      assertThat(ne.execute("hallo"), is("hallo"));
-      assertThat(ne.execute("hallo2"), is("hallo2"));
+      assertThat(ne.execute("echo('hallo')"), is("hallo"));
+      assertThat(ne.execute("echo('hallo2')"), is("hallo2"));
     } finally {
       ne.dispose();
     }
@@ -42,8 +41,7 @@ public class NativeEngineTest {
         }
       });
       ne.addScript("function run(msg) { return new String(resolve(msg)); }");
-      ne.prepareRun("run");
-      assertThat(ne.execute("hallo"), is("welt"));
+      assertThat(ne.execute("run('hallo')"), is("welt"));
     } finally {
       ne.dispose();
     }

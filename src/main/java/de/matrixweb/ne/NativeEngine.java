@@ -25,6 +25,10 @@ public class NativeEngine {
    * 
    */
   public NativeEngine() {
+    createNativeEngine();
+  }
+
+  private synchronized void createNativeEngine() {
     this.impl = new NativeEngineImpl();
   }
 
@@ -46,13 +50,6 @@ public class NativeEngine {
    */
   public synchronized void addScript(final String script) {
     this.impl.addScript(script);
-  }
-
-  /**
-   * @param name
-   */
-  public synchronized void prepareRun(final String name) {
-    this.impl.prepareRun(name);
   }
 
   /**
@@ -93,8 +90,6 @@ public class NativeEngine {
         StringFunctionCallback callback);
 
     public native void addScript(@StdString String script);
-
-    public native void prepareRun(@StdString String name);
 
     @StdString
     public native String execute(@StdString String input);

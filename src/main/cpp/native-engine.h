@@ -3,6 +3,7 @@
 
 #include <v8.h>
 #include <string>
+#include <vector>
 #include <exception>
 
 using namespace v8;
@@ -17,7 +18,7 @@ namespace ne {
 	class NativeEngine {
 	private:
 		Persistent<Context> context;
-		Persistent<Function> function;
+		std::vector<std::string> scripts;
 		std::string name;
 		StringFunctionCallback* callback;
 
@@ -25,12 +26,13 @@ namespace ne {
 		Local<External> classPtrToExternal();
 		static NativeEngine* externalToClassPtr(Local<Value>);
 
+		Local<Value> compile(std::string);
+
 	public:
-		NativeEngine();
-		~NativeEngine();
+		NativeEngine() {}
+		~NativeEngine() {}
 		void setStringFunctionCallback(std::string, StringFunctionCallback*);
-		void addScript(std::string);
-		void prepareRun(std::string);
+		void addScript(std::string script) { this->scripts.push_back(script); }
 		std::string execute(std::string);
 	};
 

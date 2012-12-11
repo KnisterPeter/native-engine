@@ -5,9 +5,8 @@ ARCH:=$(shell echo "$(OS)-$(MACHINE)" | tr A-Z a-z)
 V8_TARGET_32:=ia32.release
 V8_TARGET_64:=x64.release
 BASEDIR:=../../..
-LIBOUTDIR:=$(BASEDIR)/src/main/resources/de/matrixweb/ne/$(ARCH)
 LINKDIR:=$(BASEDIR)/target/ne
-TARGETOUTDIR:=$(BASEDIR)/target/classes/de/matrixweb/ne/$(ARCH)
+LIBOUTDIR:=$(BASEDIR)/target/classes/de/matrixweb/ne/$(ARCH)
 
 NPROCS:=1
 ifeq ($(OS),Linux)
@@ -23,7 +22,6 @@ all: v8 ne
 
 prepare:
 	mkdir -p $(LIBOUTDIR)
-	mkdir -p $(TARGETOUTDIR)
 	mkdir -p $(LINKDIR)
 
 v8: prepare 
@@ -40,4 +38,3 @@ ne: prepare
 			$(BASEDIR)/target/v8/out/$(V8_TARGET_$(BITS))/obj.target/tools/gyp/libv8_base.a \
 		-Wl,--end-group
 	cp $(LINKDIR)/libnative-engine.so $(LIBOUTDIR)
-	cp $(LINKDIR)/libnative-engine.so $(TARGETOUTDIR)
