@@ -42,12 +42,13 @@
 
   <properties>
     <mavenVersion>2.0</mavenVersion>
+    <javacpp.version>0.4-SNAPSHOT</javacpp.version>
   </properties>
   <dependencies>
     <dependency>
       <groupId>com.googlecode.javacpp</groupId>
       <artifactId>javacpp</artifactId>
-      <version>0.3</version>
+      <version>${javacpp.version}</version>
       <optional>true</optional>
     </dependency>
     <dependency>
@@ -72,7 +73,7 @@
               <checkoutDirectory>target/v8</checkoutDirectory>
               <connectionUrl>scm:git:git://github.com/v8/v8.git</connectionUrl>
               <scmVersionType>tag</scmVersionType>
-              <scmVersion>3.9.9</scmVersion>
+              <scmVersion>3.15.11</scmVersion>
             </configuration>
             <goals>
               <goal>checkout</goal>
@@ -119,7 +120,7 @@
       <plugin>
         <groupId>com.googlecode.javacpp</groupId>
         <artifactId>javacpp</artifactId>
-        <version>0.3</version>
+        <version>${javacpp.version}</version>
         <executions>
           <execution>
             <id>exec-javacpp</id>
@@ -128,6 +129,7 @@
               <goal>build</goal>
             </goals>
             <configuration>
+              <classOrPackageName>de.matrixweb.ne.**</classOrPackageName>
 <!--               <compile>false</compile> -->
             </configuration>
           </execution>

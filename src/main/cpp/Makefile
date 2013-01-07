@@ -29,7 +29,7 @@ v8: prepare
 	CXX="g++ -fPIC" $(MAKE) -j$(NPROCS) -C $(BASEDIR)/target/v8/ $(V8_TARGET_$(BITS))
 
 ne: prepare
-	g++ -Wall -pedantic -fpic -I$(BASEDIR)/target/v8/include/ -o $(BASEDIR)/target/ne/native-engine.o -c native-engine.cpp
+	g++ -Wall -pedantic -fPIC -I$(BASEDIR)/target/v8/include/ -o $(BASEDIR)/target/ne/native-engine.o -c native-engine.cpp
 	g++ -Wall -shared -Wl,--no-undefined -o $(LINKDIR)/libnative-engine.so \
 		-pthread \
 		-Wl,--start-group \

@@ -4,6 +4,7 @@ import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.FunctionPointer;
 import com.googlecode.javacpp.Loader;
 import com.googlecode.javacpp.Pointer;
+import com.googlecode.javacpp.annotation.ByVal;
 import com.googlecode.javacpp.annotation.Cast;
 import com.googlecode.javacpp.annotation.Name;
 import com.googlecode.javacpp.annotation.Namespace;
@@ -19,7 +20,7 @@ public class NativeEngine {
 
   private NativeEngineImpl impl;
 
-  private StringFunctionCallback callback;
+  private FunctionCallback callback;
 
   /**
    * 
@@ -36,7 +37,7 @@ public class NativeEngine {
    * @param functor
    */
   public void addCallbackFunction(final StringFunctor functor) {
-    this.callback = new StringFunctionCallback(functor.getName()) {
+    this.callback = new FunctionCallback(functor.getName()) {
       @Override
       @Cast("char*")
       public BytePointer call(@Cast("const char*") final BytePointer input) {
@@ -58,8 +59,7 @@ public class NativeEngine {
    */
   public synchronized String execute(final String input) {
     if (this.callback != null) {
-      this.impl.setStringFunctionCallback(this.callback.getName(),
-          this.callback);
+      this.impl.setFunctionCallback(this.callback.getName(), this.callback);
     }
     return this.impl.execute(input);
   }
@@ -73,7 +73,7 @@ public class NativeEngine {
   }
 
   @Namespace("ne")
-  @Name("NativeEngine")
+  @Name("NativeEngine<FunctionCallback>")
   private static class NativeEngineImpl extends Pointer {
 
     static {
@@ -86,8 +86,8 @@ public class NativeEngine {
 
     private native void allocate();
 
-    public native void setStringFunctionCallback(@StdString String name,
-        StringFunctionCallback callback);
+    public native void setFunctionCallback(@StdString String name,
+        @ByVal FunctionCallback callback);
 
     public native void addScript(@StdString String script);
 
@@ -99,7 +99,8 @@ public class NativeEngine {
   /**
    * @author markusw
    */
-  private static class StringFunctionCallback extends FunctionPointer {
+  @Name("FunctionCallback")
+  private static class FunctionCallback extends FunctionPointer {
 
     static {
       Loader.load();
@@ -107,7 +108,7 @@ public class NativeEngine {
 
     private final String name;
 
-    protected StringFunctionCallback(final String name) {
+    protected FunctionCallback(final String name) {
       allocate();
       this.name = name;
     }
