@@ -15,7 +15,7 @@ import com.googlecode.javacpp.annotation.StdString;
  * @author marwol
  */
 @Platform(include = "native-engine.h", includepath = { "src/main/cpp",
-    "target/v8/include" }, link = { "native-engine" }, linkpath = "target/ne")
+    "target/v8/include" }, link = { "native-engine", "v8" }, linkpath = "target/ne")
 public class NativeEngine {
 
   private NativeEngineImpl impl;

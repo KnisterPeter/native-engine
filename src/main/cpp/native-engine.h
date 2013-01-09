@@ -48,7 +48,6 @@ namespace ne {
 			}
 		};
 
-		Persistent<Context> context;
 		std::vector<std::string> scripts;
 		std::map<CallbackRef, CALLBACK> callbacks;
 
@@ -72,7 +71,7 @@ namespace ne {
 			return handle_scope.Close(result);
 		}
 
-		void setupContext() {
+		void setupContext(Persistent<Context> context) {
 			std::vector<std::string>::iterator siter;
 			for (siter = this->scripts.begin(); siter != this->scripts.end(); siter++) {
 				this->compile(*siter);
@@ -118,8 +117,14 @@ namespace ne {
 	public:
 		NativeEngine() {}
 		~NativeEngine() {}
-		void setFunctionCallback(std::string name, CALLBACK callback) { this->callbacks[CallbackRef(this, name)] = callback; }
-		void addScript(std::string script) { this->scripts.push_back(script); }
+
+		void setFunctionCallback(std::string name, CALLBACK callback) {
+			this->callbacks[CallbackRef(this, name)] = callback;
+		}
+
+		void addScript(std::string script) {
+			this->scripts.push_back(script);
+		}
 
 		std::string execute(std::string input) {
 			HandleScope handle_scope;
@@ -128,10 +133,11 @@ namespace ne {
 			Persistent<Context> context = Context::New();
 			Context::Scope context_scope(context);
 
-			this->setupContext();
-
+			this->setupContext(context);
 			Local<Value> result = this->compile(input);
+
 			context.Dispose();
+
 			if (result.IsEmpty()) {
 				throw NativeException("Script result was empty");
 			}

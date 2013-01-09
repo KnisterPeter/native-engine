@@ -26,15 +26,15 @@ prepare:
 
 v8: prepare 
 	$(MAKE) -C $(BASEDIR)/target/v8/ dependencies
-	CXX="g++ -fPIC" $(MAKE) -j$(NPROCS) -C $(BASEDIR)/target/v8/ $(V8_TARGET_$(BITS))
+	$(MAKE) -j$(NPROCS) -C $(BASEDIR)/target/v8/ $(V8_TARGET_$(BITS)) library=shared
+	cp $(BASEDIR)/target/v8/out/$(V8_TARGET_$(BITS))/obj.target/tools/gyp/libv8.so $(LINKDIR)
+	cp $(BASEDIR)/target/v8/out/$(V8_TARGET_$(BITS))/obj.target/tools/gyp/libv8.so $(LIBOUTDIR)
 
 ne: prepare
 	g++ -Wall -pedantic -fPIC -I$(BASEDIR)/target/v8/include/ -o $(BASEDIR)/target/ne/native-engine.o -c native-engine.cpp
-	g++ -Wall -shared -Wl,--no-undefined -o $(LINKDIR)/libnative-engine.so \
+	g++ -Wall -shared -o $(LINKDIR)/libnative-engine.so \
 		-pthread \
-		-Wl,--start-group \
-			$(BASEDIR)/target/ne/native-engine.o \
-			$(BASEDIR)/target/v8/out/$(V8_TARGET_$(BITS))/obj.target/tools/gyp/libv8_snapshot.a \
-			$(BASEDIR)/target/v8/out/$(V8_TARGET_$(BITS))/obj.target/tools/gyp/libv8_base.a \
-		-Wl,--end-group
+		-L$(LIBOUTDIR) \
+		$(BASEDIR)/target/ne/native-engine.o \
+		-lv8
 	cp $(LINKDIR)/libnative-engine.so $(LIBOUTDIR)
