@@ -1,4 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
@@ -69,7 +70,7 @@
           <execution>
             <phase>generate-sources</phase>
             <configuration>
-             <skipCheckoutIfExists>true</skipCheckoutIfExists>
+              <skipCheckoutIfExists>true</skipCheckoutIfExists>
               <checkoutDirectory>target/v8</checkoutDirectory>
               <connectionUrl>scm:git:git://github.com/v8/v8.git</connectionUrl>
               <scmVersionType>tag</scmVersionType>
@@ -130,7 +131,7 @@
             </goals>
             <configuration>
               <classOrPackageName>de.matrixweb.ne.**</classOrPackageName>
-<!--               <compile>false</compile> -->
+              <!-- <compile>false</compile> -->
             </configuration>
           </execution>
         </executions>
@@ -147,17 +148,33 @@
             </goals>
             <configuration>
               <outputDirectory>${basedir}/src/main/resources</outputDirectory>
-              <resources>          
+              <resources>
                 <resource>
                   <directory>${basedir}/target/classes</directory>
                   <includes>
                     <include>**/*.so</include>
                   </includes>
                 </resource>
-              </resources>              
-            </configuration>            
+              </resources>
+            </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.13</version>
+        <configuration>
+          <parallel>methods</parallel>
+          <threadCount>10</threadCount>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.apache.maven.surefire</groupId>
+            <artifactId>surefire-junit47</artifactId>
+            <version>2.13</version>
+          </dependency>
+        </dependencies>
       </plugin>
       <plugin>
         <groupId>org.apache.felix</groupId>
@@ -171,6 +188,18 @@
             <Import-Package>!org.apache.maven.plugin.*,*</Import-Package>
             <Embed-Transitive>true</Embed-Transitive>
           </instructions>
+        </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>2.3.2</version>
+        <configuration>
+          <archive>
+            <manifest>
+              <mainClass>de.matrixweb.ne.Main</mainClass>
+            </manifest>
+          </archive>
         </configuration>
       </plugin>
     </plugins>

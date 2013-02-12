@@ -8,6 +8,9 @@
 #include <exception>
 #include <stdlib.h>
 
+#define DEBUG(...) printf(__VA_ARGS__); fflush(stdout)
+//#define DEBUG(...)
+
 using namespace v8;
 
 namespace ne {
@@ -72,6 +75,8 @@ namespace ne {
 		}
 
 		void setupContext(Persistent<Context> context) {
+			HandleScope handle_scope;
+
 			std::vector<std::string>::iterator siter;
 			for (siter = this->scripts.begin(); siter != this->scripts.end(); siter++) {
 				this->compile(*siter);
@@ -127,6 +132,7 @@ namespace ne {
 		}
 
 		std::string execute(std::string input) {
+      DEBUG("execute %s\n", input.c_str());
 			HandleScope handle_scope;
 			TryCatch try_catch;
 
