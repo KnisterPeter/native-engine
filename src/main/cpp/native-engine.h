@@ -51,11 +51,13 @@ namespace ne {
 			}
 		};
 
+		Isolate* isolate;
 		std::vector<std::string> scripts;
 		std::map<CallbackRef, CALLBACK> callbacks;
 
 		Local<Value> compile(std::string script) {
-			Locker locker;
+			Isolate::Scope iscope(this->isolate);
+			Locker locker(this->isolate);
 			HandleScope handle_scope;
 			TryCatch try_catch;
 
@@ -76,7 +78,8 @@ namespace ne {
 		}
 
 		void setupContext(Persistent<Context> context) {
-			Locker locker;
+			Isolate::Scope iscope(this->isolate);
+			Locker locker(this->isolate);
 			HandleScope handle_scope;
 
 			std::vector<std::string>::iterator siter;
@@ -93,7 +96,6 @@ namespace ne {
 		}
 
 		static Handle<Value> CallbackCall(const Arguments& args) {
-			Locker locker;
 			HandleScope handle_scope;
 
 			if (args.Length() > 0) {
@@ -103,7 +105,6 @@ namespace ne {
 					CallbackRef *ref = externalToClassPtr(args.Data());
 					char* res = ref->ne->callbacks[*ref](str.c_str());
 					Handle<String> result = String::New(res);
-					delete res;
 					return handle_scope.Close(result);
 				}
 			}
@@ -111,7 +112,8 @@ namespace ne {
 		}
 
 		Local<External> classPtrToExternal(CallbackRef* ref) {
-			Locker locker;
+			Isolate::Scope iscope(this->isolate);
+			Locker locker(this->isolate);
 			HandleScope handle_scope;
 			return handle_scope.Close(External::New(reinterpret_cast<void *>(ref)));
 		};
@@ -124,8 +126,12 @@ namespace ne {
 		};
 
 	public:
-		NativeEngine() {}
-		~NativeEngine() {}
+		NativeEngine() {
+			this->isolate = Isolate::New();
+		}
+		~NativeEngine() {
+			this->isolate->Dispose();
+		}
 
 		void setFunctionCallback(std::string name, CALLBACK callback) {
 			this->callbacks[CallbackRef(this, name)] = callback;
@@ -137,7 +143,8 @@ namespace ne {
 
 		std::string execute(std::string input) {
 			//DEBUG("execute %s\n", input.c_str());
-			Locker locker;
+			Isolate::Scope iscope(this->isolate);
+			Locker locker(this->isolate);
 			HandleScope handle_scope;
 			TryCatch try_catch;
 
