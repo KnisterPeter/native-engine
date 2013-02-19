@@ -55,6 +55,7 @@ namespace ne {
 		std::map<CallbackRef, CALLBACK> callbacks;
 
 		Local<Value> compile(std::string script) {
+			Locker locker;
 			HandleScope handle_scope;
 			TryCatch try_catch;
 
@@ -75,6 +76,7 @@ namespace ne {
 		}
 
 		void setupContext(Persistent<Context> context) {
+			Locker locker;
 			HandleScope handle_scope;
 
 			std::vector<std::string>::iterator siter;
@@ -91,6 +93,7 @@ namespace ne {
 		}
 
 		static Handle<Value> CallbackCall(const Arguments& args) {
+			Locker locker;
 			HandleScope handle_scope;
 
 			if (args.Length() > 0) {
@@ -108,6 +111,7 @@ namespace ne {
 		}
 
 		Local<External> classPtrToExternal(CallbackRef* ref) {
+			Locker locker;
 			HandleScope handle_scope;
 			return handle_scope.Close(External::New(reinterpret_cast<void *>(ref)));
 		};
@@ -132,7 +136,8 @@ namespace ne {
 		}
 
 		std::string execute(std::string input) {
-      DEBUG("execute %s\n", input.c_str());
+			//DEBUG("execute %s\n", input.c_str());
+			Locker locker;
 			HandleScope handle_scope;
 			TryCatch try_catch;
 

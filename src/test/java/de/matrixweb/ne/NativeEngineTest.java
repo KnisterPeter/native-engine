@@ -1,6 +1,12 @@
 package de.matrixweb.ne;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
+import org.junit.runners.Parameterized.Parameters;
 
 import static org.junit.Assert.*;
 
@@ -9,7 +15,28 @@ import static org.hamcrest.CoreMatchers.*;
 /**
  * @author marwol
  */
+@RunWith(Parameterized.class)
 public class NativeEngineTest {
+
+  private static final int NUMBER = 100;
+
+  /**
+   * @return ...
+   */
+  @Parameters
+  public static List<Object[]> data() {
+    final List<Object[]> list = new ArrayList<Object[]>();
+    for (int i = 0; i < NUMBER; i++) {
+      list.add(new Object[] { i });
+    }
+    return list;
+  }
+
+  /**
+   * @param i
+   */
+  public NativeEngineTest(final int i) {
+  }
 
   /**
    * 
