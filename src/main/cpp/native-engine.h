@@ -76,19 +76,21 @@ namespace ne {
 		void setupContext(Persistent<Context> context) {
 			HandleScope handle_scope;
 
-			std::vector<std::string>::iterator siter;
-			for (siter = this->scripts.begin(); siter != this->scripts.end(); siter++) {
-				this->compile(*siter);
-			}
-
+			//DEBUG("Add require method\n");
 			Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(RequireCall, this->enginePtrToExternal(this));
 			context->Global()->Set(String::New("require"), funcTmpl->GetFunction());
 
 			typename std::map<std::string, CallbackRef>::iterator citer;
 			for (citer = this->callbacks.begin(); citer != this->callbacks.end(); citer++) {
 				std::string name = citer->first;
+				//DEBUG("Add %s method\n", name.c_str());
 				Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(CallbackCall, this->callbackPtrToExternal(&citer->second));
 				context->Global()->Set(String::New(name.c_str()), funcTmpl->GetFunction());
+			}
+
+			std::vector<std::string>::iterator siter;
+			for (siter = this->scripts.begin(); siter != this->scripts.end(); siter++) {
+				this->compile(*siter);
 			}
 		}
 
@@ -162,6 +164,7 @@ namespace ne {
 		}
 
 		void setRequireCallback(CALLBACK callback) {
+			//DEBUG("Set the common-js require callback resolver\n");
 			this->requireCallback = callback;
 		}
 
@@ -183,6 +186,7 @@ namespace ne {
 			Persistent<Context> context = Context::New();
 			Context::Scope context_scope(context);
 
+			//DEBUG("Setup V8 context\n");
 			this->setupContext(context);
 			Local<Value> result = this->compile(input);
 
