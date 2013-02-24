@@ -74,4 +74,49 @@ public class NativeEngineTest {
     }
   }
 
+  /**
+   * 
+   */
+  @Test
+  public void testNativeEngineCallbacks() {
+    final NativeEngine ne = new NativeEngine();
+    try {
+      ne.addCallbackFunction(new StringFunctor("a") {
+        @Override
+        public String call(final String input) {
+          return "aa";
+        }
+      });
+      ne.addCallbackFunction(new StringFunctor("b") {
+        @Override
+        public String call(final String input) {
+          return "bb";
+        }
+      });
+      assertThat(ne.execute("new String(a('') + b(''));"), is("aabb"));
+    } finally {
+      ne.dispose();
+    }
+  }
+
+  /**
+   * 
+   */
+  @Test
+  public void testNativeEngineRequire() {
+    final NativeEngine ne = new NativeEngine(new StringFunctor("") {
+      @Override
+      public String call(final String input) {
+        return "exports.echo = function(val) { return val; };";
+      }
+    });
+    try {
+      assertThat(
+          ne.execute("var echo = require('somesource').echo; new String(echo('hello'));"),
+          is("hello"));
+    } finally {
+      ne.dispose();
+    }
+  }
+
 }

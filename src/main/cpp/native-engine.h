@@ -41,23 +41,19 @@ namespace ne {
 	private:
 		class CallbackRef {
 		public:
-			NativeEngine<CALLBACK>* ne;
 			std::string name;
+			CALLBACK callback;
 
-			CallbackRef(NativeEngine<CALLBACK>* _ne, std::string _name) : ne(_ne), name(_name) {}
-
-			bool operator<(const CallbackRef& other) const {
-				return name < other.name;
-			}
+			CallbackRef() {};
+			CallbackRef(std::string _name, CALLBACK _callback) : name(_name), callback(_callback) {}
 		};
 
 		Isolate* isolate;
 		std::vector<std::string> scripts;
-		std::map<CallbackRef, CALLBACK> callbacks;
+		std::map<std::string, CallbackRef> callbacks;
+		CALLBACK requireCallback;
 
 		Local<Value> compile(std::string script) {
-			Isolate::Scope iscope(this->isolate);
-			Locker locker(this->isolate);
 			HandleScope handle_scope;
 			TryCatch try_catch;
 
@@ -78,8 +74,6 @@ namespace ne {
 		}
 
 		void setupContext(Persistent<Context> context) {
-			Isolate::Scope iscope(this->isolate);
-			Locker locker(this->isolate);
 			HandleScope handle_scope;
 
 			std::vector<std::string>::iterator siter;
@@ -87,12 +81,38 @@ namespace ne {
 				this->compile(*siter);
 			}
 
-			typename std::map<CallbackRef, CALLBACK>::iterator citer;
+			Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(RequireCall, this->enginePtrToExternal(this));
+			context->Global()->Set(String::New("require"), funcTmpl->GetFunction());
+
+			typename std::map<std::string, CallbackRef>::iterator citer;
 			for (citer = this->callbacks.begin(); citer != this->callbacks.end(); citer++) {
-				CallbackRef ref = citer->first;
-				Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(CallbackCall, this->classPtrToExternal(&ref));
-				context->Global()->Set(String::New(ref.name.c_str()), funcTmpl->GetFunction());
+				std::string name = citer->first;
+				Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(CallbackCall, this->callbackPtrToExternal(&citer->second));
+				context->Global()->Set(String::New(name.c_str()), funcTmpl->GetFunction());
 			}
+		}
+
+		static Handle<Value> RequireCall(const Arguments& args) {
+			HandleScope handle_scope;
+
+			if (args.Length() > 0) {
+				if (args[0]->IsString()) {
+					String::Utf8Value utf8(args[0]->ToString());
+					std::string str = *utf8;
+					NativeEngine<CALLBACK>* ne = externalToEnginePtr(args.Data());
+					char* res = ne->requireCallback(str.c_str());
+					std::string code = std::string("var exports = {};\n") + res + "\nexports;";
+
+					Persistent<Context> moduleContext = Context::New();
+					Context::Scope context_scope(moduleContext);
+					Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(RequireCall, ne->enginePtrToExternal(ne));
+					moduleContext->Global()->Set(String::New("require"), funcTmpl->GetFunction());
+					Local<Value> result = ne->compile(code);
+					moduleContext.Dispose();
+					return handle_scope.Close(result);
+				}
+			}
+			return v8::Undefined();
 		}
 
 		static Handle<Value> CallbackCall(const Arguments& args) {
@@ -102,8 +122,8 @@ namespace ne {
 				if (args[0]->IsString()) {
 					String::Utf8Value utf8(args[0]->ToString());
 					std::string str = *utf8;
-					CallbackRef *ref = externalToClassPtr(args.Data());
-					char* res = ref->ne->callbacks[*ref](str.c_str());
+					CallbackRef *ref = externalToCallbackPtr(args.Data());
+					char* res = ref->callback(str.c_str());
 					Handle<String> result = String::New(res);
 					return handle_scope.Close(result);
 				}
@@ -111,14 +131,22 @@ namespace ne {
 			return v8::Undefined();
 		}
 
-		Local<External> classPtrToExternal(CallbackRef* ref) {
-			Isolate::Scope iscope(this->isolate);
-			Locker locker(this->isolate);
-			HandleScope handle_scope;
-			return handle_scope.Close(External::New(reinterpret_cast<void *>(ref)));
+		Local<External> enginePtrToExternal(NativeEngine<CALLBACK>* ref) {
+			return External::New(reinterpret_cast<void *>(ref));
 		};
 
-		static CallbackRef* externalToClassPtr(Local<Value> data) {
+		static NativeEngine<CALLBACK>* externalToEnginePtr(Local<Value> data) {
+			if (!data.IsEmpty() && data->IsExternal()) {
+				return static_cast<NativeEngine<CALLBACK>*>(External::Cast(*data)->Value());
+			}
+			return NULL;
+		};
+
+		Local<External> callbackPtrToExternal(CallbackRef* ref) {
+			return External::New(reinterpret_cast<void *>(ref));
+		};
+
+		static CallbackRef* externalToCallbackPtr(Local<Value> data) {
 			if (!data.IsEmpty() && data->IsExternal()) {
 				return static_cast<CallbackRef*>(External::Cast(*data)->Value());
 			}
@@ -133,8 +161,12 @@ namespace ne {
 			this->isolate->Dispose();
 		}
 
-		void setFunctionCallback(std::string name, CALLBACK callback) {
-			this->callbacks[CallbackRef(this, name)] = callback;
+		void setRequireCallback(CALLBACK callback) {
+			this->requireCallback = callback;
+		}
+
+		void addFunctionCallback(std::string name, CALLBACK callback) {
+			this->callbacks[name] = CallbackRef(name, callback);
 		}
 
 		void addScript(std::string script) {
