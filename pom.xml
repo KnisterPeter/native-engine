@@ -167,6 +167,7 @@
         <configuration>
           <parallel>methods</parallel>
           <threadCount>10</threadCount>
+          <useUnlimitedThreads>true</useUnlimitedThreads>
         </configuration>
         <dependencies>
           <dependency>
@@ -184,6 +185,7 @@
         <configuration>
           <instructions>
             <_exportcontents>de.matrixweb.ne</_exportcontents>
+            <Include-Resource>{maven-resources}</Include-Resource>
             <Embed-Dependency>*;scope=compile|runtime;type=!pom;inline=true</Embed-Dependency>
             <Import-Package>!org.apache.maven.plugin.*,*</Import-Package>
             <Embed-Transitive>true</Embed-Transitive>
