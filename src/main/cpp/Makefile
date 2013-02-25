@@ -8,6 +8,10 @@ BASEDIR:=../../..
 LINKDIR:=$(BASEDIR)/target/ne
 LIBOUTDIR:=$(BASEDIR)/target/classes/de/matrixweb/ne/$(ARCH)
 
+ifdef DEBUG
+	CFLAGS+=-DDEBUG
+endif
+
 NPROCS:=1
 ifeq ($(OS),Linux)
   NPROCS:=$(shell grep -c ^processor /proc/cpuinfo)
@@ -31,7 +35,7 @@ v8: prepare
 	cp $(BASEDIR)/target/v8/out/$(V8_TARGET_$(BITS))/obj.target/tools/gyp/libv8.so $(LIBOUTDIR)
 
 ne: prepare
-	g++ -Wall -pedantic -fPIC -I$(BASEDIR)/target/v8/include/ -o $(BASEDIR)/target/ne/native-engine.o -c native-engine.cpp
+	g++ -Wall -pedantic -fPIC $(CFLAGS) -I$(BASEDIR)/target/v8/include/ -o $(BASEDIR)/target/ne/native-engine.o -c native-engine.cpp
 	g++ -Wall -shared -o $(LINKDIR)/libnative-engine.so \
 		-pthread \
 		-L$(LIBOUTDIR) \

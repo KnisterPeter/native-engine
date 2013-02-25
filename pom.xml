@@ -42,15 +42,18 @@
   </scm>
 
   <properties>
+    <debug></debug>
+    <ddebug>-UDEBUG</ddebug>
     <mavenVersion>2.0</mavenVersion>
     <javacpp.version>0.4-SNAPSHOT</javacpp.version>
+    <javacpp-optional>true</javacpp-optional>
   </properties>
   <dependencies>
     <dependency>
       <groupId>com.googlecode.javacpp</groupId>
       <artifactId>javacpp</artifactId>
       <version>${javacpp.version}</version>
-      <optional>true</optional>
+      <optional>${javacpp-optional}</optional>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -112,7 +115,7 @@
             </goals>
             <configuration>
               <executable>make</executable>
-              <commandlineArgs />
+              <commandlineArgs>${debug}</commandlineArgs>
               <workingDirectory>${basedir}/src/main/cpp</workingDirectory>
             </configuration>
           </execution>
@@ -132,6 +135,9 @@
             <configuration>
               <classOrPackageName>de.matrixweb.ne.**</classOrPackageName>
               <!-- <compile>false</compile> -->
+              <compilerOptions>
+                <compilerOption>${ddebug}</compilerOption>
+              </compilerOptions>
             </configuration>
           </execution>
         </executions>
@@ -273,6 +279,16 @@
       </plugins>
     </pluginManagement>
   </build>
+  <profiles>
+    <profile>
+      <id>debug</id>
+      <properties>
+        <debug>DEBUG=1</debug>
+        <ddebug>-D${debug}</ddebug>
+        <javacpp-optional>false</javacpp-optional>
+      </properties>
+    </profile>
+  </profiles>
 
   <repositories>
     <repository>

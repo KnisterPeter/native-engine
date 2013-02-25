@@ -1,8 +1,5 @@
 package de.matrixweb.ne;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.FunctionPointer;
 import com.googlecode.javacpp.Loader;
@@ -23,22 +20,18 @@ public class NativeEngine {
 
   private NativeEngineImpl impl;
 
-  private FunctionCallback requireCallback;
-
-  private List<FunctionCallback> callbacks;
-
   /**
    * 
    */
   public NativeEngine() {
     createNativeEngine();
-    this.requireCallback = new FunctionCallback("__requireCallback__") {
+    this.impl.setRequireCallback(new FunctionCallback("__requireCallback__") {
       @Override
       @Cast("char*")
       public BytePointer call(@Cast("const char*") final BytePointer input) {
         throw new IllegalStateException("No require callback defined");
       }
-    };
+    });
   }
 
   /**
@@ -47,13 +40,13 @@ public class NativeEngine {
    */
   public NativeEngine(final StringFunctor requireCallback) {
     createNativeEngine();
-    this.requireCallback = new FunctionCallback("__requireCallback__") {
+    this.impl.setRequireCallback(new FunctionCallback("__requireCallback__") {
       @Override
       @Cast("char*")
       public BytePointer call(@Cast("const char*") final BytePointer input) {
         return new BytePointer(requireCallback.call(input.getString()));
       }
-    };
+    });
   }
 
   private synchronized void createNativeEngine() {
@@ -64,10 +57,8 @@ public class NativeEngine {
    * @param functor
    */
   public void addCallbackFunction(final StringFunctor functor) {
-    if (this.callbacks == null) {
-      this.callbacks = new ArrayList<NativeEngine.FunctionCallback>();
-    }
-    this.callbacks.add(new FunctionCallback(functor.getName()) {
+    this.impl.addFunctionCallback(functor.getName(), new FunctionCallback(
+        functor.getName()) {
       @Override
       @Cast("char*")
       public BytePointer call(@Cast("const char*") final BytePointer input) {
@@ -88,12 +79,6 @@ public class NativeEngine {
    * @return Returns the output of the executed scripts as {@link String}
    */
   public synchronized String execute(final String input) {
-    this.impl.setRequireCallback(this.requireCallback);
-    if (this.callbacks != null) {
-      for (final FunctionCallback callback : this.callbacks) {
-        this.impl.addFunctionCallback(callback.getName(), callback);
-      }
-    }
     return this.impl.execute(input);
   }
 
