@@ -71,7 +71,15 @@ public class NativeEngine {
    * @param script
    */
   public synchronized void addScript(final String script) {
-    this.impl.addScript(script);
+    addScript("<unknown>", script);
+  }
+
+  /**
+   * @param name
+   * @param script
+   */
+  public synchronized void addScript(final String name, final String script) {
+    this.impl.addScript(name, script);
   }
 
   /**
@@ -109,7 +117,8 @@ public class NativeEngine {
     public native void addFunctionCallback(@StdString String name,
         @ByVal FunctionCallback callback);
 
-    public native void addScript(@StdString String script);
+    public native void addScript(@StdString String name,
+        @StdString String script);
 
     @StdString
     public native String execute(@StdString String input);

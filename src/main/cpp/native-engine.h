@@ -3,6 +3,7 @@
 
 #include <v8.h>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <map>
 #include <exception>
@@ -20,6 +21,26 @@ using namespace v8;
 namespace ne {
 
 	/**
+	 * Utility function for splitting a string
+	 */
+	std::vector<std::string> &split(const std::string &s, char delim, std::vector<std::string> &elems) {
+		std::stringstream ss(s);
+		std::string item;
+		while(std::getline(ss, item, delim)) {
+			elems.push_back(item);
+		}
+		return elems;
+	}
+
+	/**
+	 * Utility function for splitting a string
+	 */
+	std::vector<std::string> split(const std::string &s, char delim) {
+		std::vector<std::string> elems;
+		return split(s, delim, elems);
+	}
+
+	/**
 	 *
 	 */
 	class NativeException : public std::exception {
@@ -33,7 +54,7 @@ namespace ne {
 		virtual ~NativeException() throw() {}
 
 		virtual const char* what() const throw() {
-			return this->message.c_str();
+			return message.c_str();
 		}
 	};
 
@@ -52,109 +73,150 @@ namespace ne {
 			CallbackRef(std::string _name, CALLBACK _callback) : name(_name), callback(_callback) {}
 		};
 
+		class ModuleContext {
+		private:
+			NativeEngine<CALLBACK>* ne;
+			std::string id;
+			Persistent<Context> context;
+
+		public:
+			ModuleContext(NativeEngine<CALLBACK>* ne, std::string id) {
+				DEBUG("ModuleContext('%s')\n", id.c_str());
+
+				this->ne = ne;
+				this->id = id;
+				this->context = Context::New();
+
+				HandleScope handleScope;
+				Context::Scope context_scope(context);
+
+				Local<Object> data = Object::New();
+				data->Set(String::New("parentModuleId"), String::New(id.c_str()));
+				data->Set(String::New("engine"), ne->enginePtrToExternal());
+				Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(RequireCall, data);
+				context->Global()->Set(String::New("require"), funcTmpl->GetFunction());
+			}
+			~ModuleContext() {
+				DEBUG("~ModuleContext('%s')\n", id.c_str());
+				context.Dispose();
+			}
+
+			Handle<Value> execute() {
+				HandleScope handleScope;
+				Context::Scope context_scope(context);
+
+				Local<String> exportsName = String::New("exports");
+				if (context->Global()->Has(exportsName)) {
+					return handleScope.Close(context->Global()->Get(exportsName));
+				}
+
+				context->Global()->Set(exportsName, Object::New());
+DEBUG("ModuleContext#execute() - require '%s'\n", id.c_str());
+				// TODO: Handle exceptions
+				char* script = ne->requireCallback(id.c_str());
+				ne->compileAndRun(id, script);
+				return handleScope.Close(context->Global()->Get(exportsName));
+			}
+		};
+
 		Isolate* isolate;
 		Persistent<Context> context;
-		std::vector<std::string> scripts;
-		std::map<std::string, CallbackRef> callbacks;
+		std::vector<CallbackRef*> callbacks;
 
 		CALLBACK requireCallback;
-		std::string requireBasePath;
-		std::map<std::string, Handle<Value> > requireResults;
+		std::map<std::string, ModuleContext*> modules;
 
-		void setupContext(Persistent<Context> context) {
-			HandleScope handle_scope;
-
-			//DEBUG("Add require method\n");
-			Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(RequireCall, this->enginePtrToExternal(this));
-			context->Global()->Set(String::New("require"), funcTmpl->GetFunction());
-
-			typename std::map<std::string, CallbackRef>::iterator citer;
-			for (citer = this->callbacks.begin(); citer != this->callbacks.end(); citer++) {
-				std::string name = citer->first;
-				//DEBUG("Add %s method\n", name.c_str());
-				Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(CallbackCall, this->callbackPtrToExternal(&citer->second));
-				context->Global()->Set(String::New(name.c_str()), funcTmpl->GetFunction());
-			}
-
-			std::vector<std::string>::iterator siter;
-			for (siter = this->scripts.begin(); siter != this->scripts.end(); siter++) {
-				this->compileAndRun(*siter);
-			}
-		}
-
-		Local<Value> compileAndRun(std::string script) {
-			HandleScope handle_scope;
-			TryCatch try_catch;
+		Local<Value> compileAndRun(std::string name, std::string script) {
+			HandleScope handleScope;
+			TryCatch tryCatch;
 
 			Handle<String> source = String::New(script.c_str());
-			Handle<Script> compiled = Script::Compile(source);
+			Handle<Script> compiled = Script::Compile(source, String::New(name.c_str()));
 			if (compiled.IsEmpty()) {
-				String::Utf8Value exception(try_catch.Exception());
+				String::Utf8Value exception(tryCatch.Exception());
 				throw NativeException(*exception);
 			}
 
 			Local<Value> result = compiled->Run();
 			if (result.IsEmpty()) {
-				String::Utf8Value exception(try_catch.Exception());
+				String::Utf8Value exception(tryCatch.Exception());
 				throw NativeException(*exception);
 			}
 
-			return handle_scope.Close(result);
+			return handleScope.Close(result);
+		}
+
+		std::string parseModulePath(std::string parentId, std::string id) {
+			DEBUG("parseModulePath('%s', '%s')\n", parentId.c_str(), id.c_str());
+			std::string moduleId;
+			size_t idx = parentId.find_last_of("/");
+			if (idx != std::string::npos) {
+				moduleId = parentId.substr(0, idx + 1);
+			} else {
+				moduleId = "";
+			}
+			moduleId += id;
+			std::vector<std::string> parts = split(moduleId, '/');
+			for (std::vector<std::string>::iterator it = parts.begin(); it != parts.end(); it++) {
+				std::string part = *it;
+				if (part.compare(".") == 0) {
+					parts.erase(it);
+				} else if (part.compare("..") == 0) {
+					parts.erase(it);
+					parts.erase(it - 1);
+				}
+			}
+			moduleId = "";
+			for (std::vector<std::string>::iterator it = parts.begin(); it != parts.end(); it++) {
+				moduleId += "/" + *it;
+			}
+			return moduleId.substr(1);
 		}
 
 		static Handle<Value> RequireCall(const Arguments& args) {
 			if (args.Length() > 0) {
 				if (args[0]->IsString()) {
-					NativeEngine<CALLBACK>* ne = externalToEnginePtr(args.Data());
+					HandleScope handleScope;
+
+					Local<Object> data = Object::Cast(*(args.Data()));
+					NativeEngine<CALLBACK>* ne = externalToEnginePtr(data->Get(String::New("engine")));
 					String::Utf8Value utf8(args[0]->ToString());
-					std::string module = *utf8;
-					std::string path = ne->requireBasePath + module;
-					// TODO: normalize path
-					// TODO: check if path is already in 'required-modules'
-					return executeRequire(ne, module, path);
+					std::string moduleId = *utf8;
+					String::Utf8Value parentModuleId(data->Get(String::New("parentModuleId")));
+					moduleId = ne->parseModulePath(*parentModuleId, moduleId);
+
+					ModuleContext* moduleContext;
+					typename std::map<std::string, ModuleContext*>::iterator it = ne->modules.find(moduleId);
+					if (it != ne->modules.end()) {
+						moduleContext = it->second;
+					} else {
+						moduleContext = new ModuleContext(ne, moduleId);
+						ne->modules[moduleId] = moduleContext;
+					}
+					return moduleContext->execute();
 				}
 			}
 			return v8::Undefined();
 		}
 
-		static Handle<Value> executeRequire(NativeEngine<CALLBACK>* ne, std::string module, std::string path) {
-			HandleScope handle_scope;
-
-			char* res = ne->requireCallback(path.c_str());
-			std::string code = std::string("var exports = {};\n") + res + "\nexports;";
-
-			std::string save = ne->requireBasePath;
-			ne->requireBasePath = path.substr(0, path.find_last_of("/") + 1);
-
-			Persistent<Context> moduleContext = Context::New();
-			Context::Scope context_scope(moduleContext);
-			Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(RequireCall, ne->enginePtrToExternal(ne));
-			moduleContext->Global()->Set(String::New("require"), funcTmpl->GetFunction());
-			Local<Value> result = ne->compileAndRun(code);
-			moduleContext.Dispose();
-
-			ne->requireBasePath = save;
-			return handle_scope.Close(result);
-		}
-
 		static Handle<Value> CallbackCall(const Arguments& args) {
-			HandleScope handle_scope;
-
 			if (args.Length() > 0) {
 				if (args[0]->IsString()) {
+					HandleScope handleScope;
+
 					String::Utf8Value utf8(args[0]->ToString());
 					std::string str = *utf8;
 					CallbackRef *ref = externalToCallbackPtr(args.Data());
 					char* res = ref->callback(str.c_str());
 					Handle<String> result = String::New(res);
-					return handle_scope.Close(result);
+					return handleScope.Close(result);
 				}
 			}
 			return v8::Undefined();
 		}
 
-		Local<External> enginePtrToExternal(NativeEngine<CALLBACK>* ref) {
-			return External::New(reinterpret_cast<void *>(ref));
+		Local<External> enginePtrToExternal() {
+			return External::New(reinterpret_cast<void *>(this));
 		};
 
 		static NativeEngine<CALLBACK>* externalToEnginePtr(Local<Value> data) {
@@ -176,61 +238,95 @@ namespace ne {
 		};
 
 		void setUpContext() {
-			Isolate::Scope iscope(this->isolate);
-			Locker locker(this->isolate);
-			HandleScope handle_scope;
+			Locker locker(isolate);
+			Isolate::Scope iscope(isolate);
+			HandleScope handleScope;
 
-			this->context = Context::New();
+			context = Context::New();
+			Context::Scope context_scope(context);
+
+			Local<Object> data = Object::New();
+			data->Set(String::New("parentModuleId"), String::New(""));
+			data->Set(String::New("engine"), enginePtrToExternal());
+			Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(RequireCall, data);
+			context->Global()->Set(String::New("require"), funcTmpl->GetFunction());
 		};
 
 		void tearDownContext() {
-			Isolate::Scope iscope(this->isolate);
-			Locker locker(this->isolate);
-			HandleScope handle_scope;
+			Locker locker(isolate);
+			Isolate::Scope iscope(isolate);
+			HandleScope handleScope;
+			Context::Scope context_scope(context);
 
-			this->context.Dispose();
+			for (typename std::vector<CallbackRef*>::iterator it = callbacks.begin();
+					it != callbacks.end();
+					it++) {
+				delete *it;
+			}
+
+			for (typename std::map<std::string, ModuleContext*>::iterator it = modules.begin();
+					it != modules.end();
+					it++) {
+				delete it->second;
+			}
+
+			context.Dispose();
 		};
 
 	public:
 		NativeEngine() {
-			DEBUG("Constructor called\n");
-			this->isolate = Isolate::New();
-			this->requireBasePath = "";
+			DEBUG("NativeEngine()\n");
+			isolate = Isolate::New();
 
-			this->setUpContext();
+			setUpContext();
 		}
 		~NativeEngine() {
-			DEBUG("Destructor called\n");
-			this->tearDownContext();
-			this->isolate->Dispose();
+			DEBUG("~NativeEngine()\n");
+			tearDownContext();
+			isolate->Dispose();
 		}
 
 		void setRequireCallback(CALLBACK callback) {
 			//DEBUG("Set the common-js require callback resolver\n");
-			this->requireCallback = callback;
+			requireCallback = callback;
 		}
 
 		void addFunctionCallback(std::string name, CALLBACK callback) {
-			this->callbacks[name] = CallbackRef(name, callback);
+			DEBUG("addFunctionCallback('%s')\n", name.c_str());
+
+			Locker locker(isolate);
+			Isolate::Scope iscope(isolate);
+			HandleScope handleScope;
+			Context::Scope context_scope(context);
+
+			CallbackRef* ref = new CallbackRef(name, callback);
+			callbacks.push_back(ref);
+
+			Local<FunctionTemplate> funcTmpl = FunctionTemplate::New(CallbackCall, callbackPtrToExternal(ref));
+			context->Global()->Set(String::New(name.c_str()), funcTmpl->GetFunction());
 		}
 
-		void addScript(std::string script) {
-			this->scripts.push_back(script);
+		void addScript(std::string name, std::string script) {
+			DEBUG("addScript('%s')\n", name.c_str());
+
+			Locker locker(isolate);
+			Isolate::Scope iscope(isolate);
+			HandleScope handleScope;
+			Context::Scope context_scope(context);
+
+			compileAndRun(name, script);
 		}
 
 		std::string execute(std::string input) {
 			DEBUG("execute %s\n", input.c_str());
-			Isolate::Scope iscope(this->isolate);
-			Locker locker(this->isolate);
-			HandleScope handle_scope;
-			TryCatch try_catch;
 
-			Context::Scope context_scope(this->context);
+			Locker locker(isolate);
+			Isolate::Scope iscope(isolate);
+			HandleScope handleScope;
+			Context::Scope context_scope(context);
 
-			//DEBUG("Setup V8 context\n");
-			this->setupContext(this->context);
-			Local<Value> result = this->compileAndRun(input);
-
+			TryCatch tryCatch;
+			Local<Value> result = compileAndRun("execute", input);
 			if (result.IsEmpty()) {
 				throw NativeException("Script result was empty");
 			}

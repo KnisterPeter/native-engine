@@ -46,14 +46,13 @@
     <ddebug>-UDEBUG</ddebug>
     <mavenVersion>2.0</mavenVersion>
     <javacpp.version>0.4-SNAPSHOT</javacpp.version>
-    <javacpp-optional>true</javacpp-optional>
   </properties>
   <dependencies>
     <dependency>
       <groupId>com.googlecode.javacpp</groupId>
       <artifactId>javacpp</artifactId>
       <version>${javacpp.version}</version>
-      <optional>${javacpp-optional}</optional>
+      <optional>true</optional>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
@@ -148,7 +147,7 @@
         <executions>
           <execution>
             <id>copy-resources</id>
-            <phase>validate</phase>
+            <phase>process-classes</phase>
             <goals>
               <goal>copy-resources</goal>
             </goals>
@@ -172,8 +171,7 @@
         <version>2.13</version>
         <configuration>
           <parallel>methods</parallel>
-          <threadCount>10</threadCount>
-          <useUnlimitedThreads>true</useUnlimitedThreads>
+          <threadCount>20</threadCount>
         </configuration>
         <dependencies>
           <dependency>
@@ -287,6 +285,14 @@
         <ddebug>-D${debug}</ddebug>
         <javacpp-optional>false</javacpp-optional>
       </properties>
+      <dependencies>
+        <dependency>
+          <groupId>com.googlecode.javacpp</groupId>
+          <artifactId>javacpp</artifactId>
+          <version>${javacpp.version}</version>
+          <optional>false</optional>
+        </dependency>
+      </dependencies>
     </profile>
   </profiles>
 
