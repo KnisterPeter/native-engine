@@ -45,7 +45,7 @@
     <debug></debug>
     <ddebug>-UDEBUG</ddebug>
     <mavenVersion>2.0</mavenVersion>
-    <javacpp.version>0.4-SNAPSHOT</javacpp.version>
+    <javacpp.version>0.4</javacpp.version>
   </properties>
   <dependencies>
     <dependency>
