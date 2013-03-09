@@ -295,20 +295,4 @@
       </dependencies>
     </profile>
   </profiles>
-
-  <repositories>
-    <repository>
-      <id>javacpp</id>
-      <name>JavaCPP</name>
-      <url>http://maven2.javacpp.googlecode.com/git/</url>
-    </repository>
-  </repositories>
-  <pluginRepositories>
-    <pluginRepository>
-      <id>javacpp</id>
-      <name>JavaCPP</name>
-      <url>http://maven2.javacpp.googlecode.com/git/</url>
-    </pluginRepository>
-  </pluginRepositories>
-
 </project>
