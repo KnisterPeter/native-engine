@@ -75,7 +75,7 @@
               <checkoutDirectory>target/v8</checkoutDirectory>
               <connectionUrl>scm:git:git://github.com/v8/v8.git</connectionUrl>
               <scmVersionType>tag</scmVersionType>
-              <scmVersion>3.15.11</scmVersion>
+              <scmVersion>3.17.16</scmVersion>
             </configuration>
             <goals>
               <goal>checkout</goal>
