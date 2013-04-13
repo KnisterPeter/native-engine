@@ -38,7 +38,26 @@ public class CallbackTest extends AbstractTestSetup {
           return "bb";
         }
       });
-      assertThat(ne.execute("new String(a('') + b(''));"), is("aabb"));
+      assertThat(ne.execute("a('') + b('')"), is("aabb"));
+    } finally {
+      ne.dispose();
+    }
+  }
+
+  /**
+   * @throws NativeEngineException
+   */
+  @Test
+  public void testNullCallbacks() throws NativeEngineException {
+    final NativeEngine ne = new NativeEngine();
+    try {
+      ne.addCallbackFunction(new StringFunctor("a") {
+        @Override
+        public String call(final String input) {
+          return null;
+        }
+      });
+      assertThat(ne.execute("a('')"), is(""));
     } finally {
       ne.dispose();
     }

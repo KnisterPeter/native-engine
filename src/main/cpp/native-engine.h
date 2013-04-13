@@ -98,7 +98,7 @@ namespace ne {
 			}
 			~ModuleContext() {
 				DEBUG("~ModuleContext('%s')\n", id.c_str());
-				context.Dispose();
+				context.Dispose(ne->isolate);
 			}
 
 			Handle<Value> execute() {
@@ -208,8 +208,10 @@ DEBUG("ModuleContext#execute() - require '%s'\n", id.c_str());
 					std::string str = *utf8;
 					CallbackRef *ref = externalToCallbackPtr(args.Data());
 					char* res = ref->callback(str.c_str());
-					Handle<String> result = String::New(res);
-					return handleScope.Close(result);
+					if (res == NULL) {
+						return v8::Null();
+					}
+					return handleScope.Close(StringObject::New(String::New(res)));
 				}
 			}
 			return v8::Undefined();
@@ -270,7 +272,7 @@ DEBUG("ModuleContext#execute() - require '%s'\n", id.c_str());
 				delete it->second;
 			}
 
-			context.Dispose();
+			context.Dispose(isolate);
 		};
 
 	public:

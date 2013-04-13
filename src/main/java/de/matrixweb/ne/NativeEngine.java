@@ -70,7 +70,8 @@ public class NativeEngine {
           @Override
           @Cast("char*")
           public BytePointer call(@Cast("const char*") final BytePointer input) {
-            return new BytePointer(functor.call(input.getString()));
+            final String result = functor.call(input.getString());
+            return new BytePointer(result == null ? "" : result);
           }
         });
     this.impl.addFunctionCallback(functor.getName(),

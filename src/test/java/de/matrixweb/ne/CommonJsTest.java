@@ -32,7 +32,7 @@ public class CommonJsTest extends AbstractTestSetup {
     });
     try {
       assertThat(
-          ne.execute("var echo = require('somesource').echo; new String(echo('hello'));"),
+          ne.execute("var echo = require('somesource').echo; echo('hello')"),
           is("hello"));
     } finally {
       ne.dispose();
@@ -62,7 +62,7 @@ public class CommonJsTest extends AbstractTestSetup {
     });
     try {
       assertThat(
-          ne.execute("var top = require('./lib/top'); new String(top.echo('hello'));"),
+          ne.execute("var top = require('./lib/top'); top.echo('hello');"),
           is("hello"));
     } finally {
       ne.dispose();
