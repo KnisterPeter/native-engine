@@ -2,6 +2,8 @@ package de.matrixweb.ne;
 
 import org.junit.Test;
 
+import de.matrixweb.ne.NativeEngine.NativeEngineException;
+
 import static org.junit.Assert.*;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -18,10 +20,10 @@ public class ScriptTest extends AbstractTestSetup {
   }
 
   /**
-   * 
+   * @throws NativeEngineException
    */
   @Test
-  public void runSimpleScript() {
+  public void runSimpleScript() throws NativeEngineException {
     final NativeEngine ne = new NativeEngine();
     try {
       assertThat(ne.execute("(function(msg) { return msg; })('a')"), is("a"));
@@ -31,10 +33,10 @@ public class ScriptTest extends AbstractTestSetup {
   }
 
   /**
-   * 
+   * @throws NativeEngineException
    */
   @Test
-  public void runMultipleScriptsMultipleTimes() {
+  public void runMultipleScriptsMultipleTimes() throws NativeEngineException {
     final NativeEngine ne = new NativeEngine();
     try {
       ne.addScript("function echo(msg) { return msg; }");

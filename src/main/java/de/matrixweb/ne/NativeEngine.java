@@ -1,5 +1,8 @@
 package de.matrixweb.ne;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.googlecode.javacpp.BytePointer;
 import com.googlecode.javacpp.FunctionPointer;
 import com.googlecode.javacpp.Loader;
@@ -20,12 +23,15 @@ public class NativeEngine {
 
   private NativeEngineImpl impl;
 
+  private FunctionCallback requireCallback;
+
+  private final Map<String, FunctionCallback> functors = new HashMap<String, FunctionCallback>();
+
   /**
    * 
    */
   public NativeEngine() {
-    createNativeEngine();
-    this.impl.setRequireCallback(new FunctionCallback("__requireCallback__") {
+    createNativeEngine(new FunctionCallback("__requireCallback__") {
       @Override
       @Cast("char*")
       public BytePointer call(@Cast("const char*") final BytePointer input) {
@@ -39,8 +45,7 @@ public class NativeEngine {
    * 
    */
   public NativeEngine(final StringFunctor requireCallback) {
-    createNativeEngine();
-    this.impl.setRequireCallback(new FunctionCallback("__requireCallback__") {
+    createNativeEngine(new FunctionCallback("__requireCallback__") {
       @Override
       @Cast("char*")
       public BytePointer call(@Cast("const char*") final BytePointer input) {
@@ -49,22 +54,27 @@ public class NativeEngine {
     });
   }
 
-  private synchronized void createNativeEngine() {
+  private synchronized void createNativeEngine(
+      final FunctionCallback requireCallback) {
+    this.requireCallback = requireCallback;
     this.impl = new NativeEngineImpl();
+    this.impl.setRequireCallback(this.requireCallback);
   }
 
   /**
    * @param functor
    */
   public void addCallbackFunction(final StringFunctor functor) {
-    this.impl.addFunctionCallback(functor.getName(), new FunctionCallback(
-        functor.getName()) {
-      @Override
-      @Cast("char*")
-      public BytePointer call(@Cast("const char*") final BytePointer input) {
-        return new BytePointer(functor.call(input.getString()));
-      }
-    });
+    this.functors.put(functor.getName(),
+        new FunctionCallback(functor.getName()) {
+          @Override
+          @Cast("char*")
+          public BytePointer call(@Cast("const char*") final BytePointer input) {
+            return new BytePointer(functor.call(input.getString()));
+          }
+        });
+    this.impl.addFunctionCallback(functor.getName(),
+        this.functors.get(functor.getName()));
   }
 
   /**
@@ -85,9 +95,16 @@ public class NativeEngine {
   /**
    * @param input
    * @return Returns the output of the executed scripts as {@link String}
+   * @throws NativeEngineException
+   *           Thrown in case of a native error
    */
-  public synchronized String execute(final String input) {
-    return this.impl.execute(input);
+  public synchronized String execute(final String input)
+      throws NativeEngineException {
+    try {
+      return this.impl.execute(input);
+    } catch (final RuntimeException e) {
+      throw new NativeEngineException("Failed to execute", e);
+    }
   }
 
   /**
@@ -154,6 +171,23 @@ public class NativeEngine {
      */
     @Cast("char*")
     public native BytePointer call(@Cast("const char*") BytePointer input);
+
+  }
+
+  /**
+   * @author markusw
+   */
+  public static class NativeEngineException extends Exception {
+
+    private static final long serialVersionUID = 4372554400816327101L;
+
+    /**
+     * @param message
+     * @param cause
+     */
+    public NativeEngineException(final String message, final Throwable cause) {
+      super(message, cause);
+    }
 
   }
 

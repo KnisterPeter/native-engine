@@ -2,6 +2,8 @@ package de.matrixweb.ne;
 
 import org.junit.Test;
 
+import de.matrixweb.ne.NativeEngine.NativeEngineException;
+
 import static org.junit.Assert.*;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -18,10 +20,10 @@ public class CommonJsTest extends AbstractTestSetup {
   }
 
   /**
-   * 
+   * @throws NativeEngineException
    */
   @Test
-  public void testRequire() {
+  public void testRequire() throws NativeEngineException {
     final NativeEngine ne = new NativeEngine(new StringFunctor("") {
       @Override
       public String call(final String input) {
@@ -38,10 +40,10 @@ public class CommonJsTest extends AbstractTestSetup {
   }
 
   /**
-   * 
+   * @throws NativeEngineException
    */
   @Test
-  public void testRequireWithSubmodules() {
+  public void testRequireWithSubmodules() throws NativeEngineException {
     final String top = "var sub = require('./sub');exports.echo = sub.echo2;";
     final String sub1 = "var sub2 = require('../lib2/sub'); exports.echo2 = sub2.echo3";
     final String sub2 = "exports.echo3 = function(val) { return val; }";

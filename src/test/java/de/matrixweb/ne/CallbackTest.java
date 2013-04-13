@@ -2,6 +2,8 @@ package de.matrixweb.ne;
 
 import org.junit.Test;
 
+import de.matrixweb.ne.NativeEngine.NativeEngineException;
+
 import static org.junit.Assert.*;
 
 import static org.hamcrest.CoreMatchers.*;
@@ -18,10 +20,10 @@ public class CallbackTest extends AbstractTestSetup {
   }
 
   /**
-   * 
+   * @throws NativeEngineException
    */
   @Test
-  public void testCallbacks() {
+  public void testCallbacks() throws NativeEngineException {
     final NativeEngine ne = new NativeEngine();
     try {
       ne.addCallbackFunction(new StringFunctor("a") {

@@ -6,6 +6,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 
+import de.matrixweb.ne.NativeEngine.NativeEngineException;
+
 /**
  * @author markusw
  */
@@ -14,8 +16,10 @@ public class Main {
   /**
    * @param args
    * @throws IOException
+   * @throws NativeEngineException
    */
-  public static void main(final String[] args) throws IOException {
+  public static void main(final String[] args) throws IOException,
+      NativeEngineException {
     final NativeEngine ne = new NativeEngine();
     try {
       String exec = null;
