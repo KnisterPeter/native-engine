@@ -105,17 +105,23 @@ namespace ne {
 				HandleScope handleScope;
 				Context::Scope context_scope(context);
 
+				Local<String> moduleName = String::New("module");
 				Local<String> exportsName = String::New("exports");
-				if (context->Global()->Has(exportsName)) {
-					return handleScope.Close(context->Global()->Get(exportsName));
+				if (context->Global()->Has(moduleName)) {
+					Handle<Object> module = Local<Object>::Cast(context->Global()->Get(moduleName));
+					Handle<Value> exports = module->Get(exportsName);
+					return handleScope.Close(exports);
 				}
 
-				context->Global()->Set(exportsName, Object::New());
-DEBUG("ModuleContext#execute() - require '%s'\n", id.c_str());
-				// TODO: Handle exceptions
+				DEBUG("ModuleContext#execute() - require '%s'\n", id.c_str());
+				std::string setupScript = "var module = {exports:{}};var exports = module.exports;";
+				ne->compileAndRun(id, setupScript);
 				char* script = ne->requireCallback(id.c_str());
 				ne->compileAndRun(id, script);
-				return handleScope.Close(context->Global()->Get(exportsName));
+
+				Handle<Object> module = Local<Object>::Cast(context->Global()->Get(moduleName));
+				Handle<Value> exports = module->Get(exportsName);
+				return handleScope.Close(exports);
 			}
 		};
 

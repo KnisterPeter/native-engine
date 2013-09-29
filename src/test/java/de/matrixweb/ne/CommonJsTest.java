@@ -69,4 +69,24 @@ public class CommonJsTest extends AbstractTestSetup {
     }
   }
 
+  /**
+   * @throws NativeEngineException
+   */
+  @Test
+  public void testModulesExport() throws NativeEngineException {
+    final NativeEngine ne = new NativeEngine(new StringFunctor("") {
+      @Override
+      public String call(final String input) {
+        return "module.exports.echo = function(val) { return val; };";
+      }
+    });
+    try {
+      assertThat(
+          ne.execute("var some = require('somesource'); some.echo('hello')"),
+          is("hello"));
+    } finally {
+      ne.dispose();
+    }
+  }
+
 }
